@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulse Scaling Calibration Management</title>
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="bulma.min.css">
+  <link rel="stylesheet" href="bulma-cyborg-theme.css">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title has-text-centered">Pulse Scaling Calibration</h1>
+      <h6 class="subtitle has-text-centered has-text-grey">[Pins: Input D3 and Output D7]</h6>
+
+      <div class="box" id="scalingFactorContainer">
+        <h2 class="subtitle" id="scalingFactorTitle">Current Output Scaling:
+          <div id="currentScalingFactor" class="notification">0.00%</div>
+        </h2>
+      </div>
+
+      <div id="statusMessage" class="notification is-light">
+        Ready to start calibration. Please enter the target volume.
+      </div>
+
+      <div class="box" id="calibrationBox">
+        <h2 class="title">Calibration Process:</h2>
+        <div class="field">
+          <label class="label" for="targetVolume">Step 1: Enter Target Volume (Liters)</label>
+          <div class="control has-icons-left">
+            <input class="input" type="number" id="targetVolume" name="targetVolume" step="0.01" min="0.01"
+              placeholder="Enter target volume in liters" required>
+            <span class="icon is-small is-left">
+              <i class="fas fa-tint"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <label class="label">Step 2: Run Calibration</label>
+          <button id="startCalibration" class="button is-info is-fullwidth">Start Calibration</button>
+          <button id="stopCalibration" class="button is-danger is-fullwidth">Stop Calibration</button>
+        </div>
+
+        <div class="field">
+          <label class="label" for="observedVolume">Step 3: Enter Observed Volume (Liters)</label>
+          <div class="control has-icons-left">
+            <input class="input" type="number" id="observedVolume" name="observedVolume" step="0.01" min="0.01"
+              placeholder="Enter observed volume in liters" required>
+            <span class="icon is-small is-left">
+              <i class="fas fa-tint"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="field pulse-field">
+          <label class="label">Pulse Count</label>
+          <div id="pulseCountDisplay" class="pulse-display">0</div>
+        </div>
+
+        <div class="field pulse-field">
+          <label class="label pulse-label">Pulses/Liter</label>
+          <div id="pulsesPerLiterDisplay" class="pulse-display">0.00</div>
+        </div>
+
+        <div class="field pulse-field">
+          <label class="label pulse-label">Output Scaling Factor (%)</label>
+          <div id="scalingFactorDisplay" class="pulse-display">0.00%</div>
+        </div>
+
+        <label class="label">Step 4: Save Calibration Record</label>
+        <button id="submitCalibration" class="button is-success is-fullwidth">Save Calibration</button>
+
+        <div class="field">
+          <label class="label">* Step 5: Select new scaling factor below if required</label>
+        </div>
+      </div>
+
+      <h3 class="title">Calibration Records</h3>
+      <h6 class="subtitle has-text-grey">Click on a calibration record or the average summary below to
+        select the scaling factor for your system.</h6>
+      <ul id="calibrationList">
+        <!-- Calibration records will be populated here -->
+      </ul>
+    </div>
+
+    <div class="container">
+      <!-- Add check for new firmware button -->
+      <button id="checkFirmware" class="button is-info is-fullwidth">Check for update</button>
+      <p id="firmwareStatus"></p>
+      <p id="firmwareVersion"></p>
+      <p id="firmwareUpdate"></p>
+      <p id="firmwareUpdateStatus"></p>
+    </div>
+  </section>
+
+  <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
+  <script src="script.js"></script>
+  <script src="websocket.js"></script>
+</body>
+
+</html>
