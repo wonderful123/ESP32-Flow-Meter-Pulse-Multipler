@@ -24,7 +24,7 @@ void ApplicationManager::begin() {
 }
 
 void ApplicationManager::loop() {
-  float outputScalingFactor = calibrationManager.getScalingFactor();
+  float outputScalingFactor = calibrationManager.getCalibrationFactor();
   scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
 
   broadcastPulseCountAtInterval(PULSE_BROADCAST_INTERVAL);
