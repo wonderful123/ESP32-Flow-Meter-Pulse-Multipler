@@ -3,13 +3,14 @@
 
 #include <ESP8266mDNS.h>
 #include <ESPAsyncWebServer.h>
-#include <WebSocketServer.h>
 
 #include "CalibrationManager.h"
-#include "FS.h"
-#include "LittleFS.h"
+#include "EpochTimeManager.h"
+#include "FileSystemManager.h"
 #include "OTAUpdater.h"
 #include "PulseCounter.h"
+#include "RouteHandler.h"
+#include "WebSocketServer.h"
 
 #define WEBSOCKET_PORT 80
 
@@ -20,19 +21,18 @@ class WebServerManager {
   void begin();
   void update();
   void broadcastPulseCount(unsigned long pulseCount);
+  EpochTimeManager& getEpochTimeManager();
 
  private:
-  AsyncWebServer _server{80};
   CalibrationManager& _calibrationManager;
   PulseCounter& _pulseCounter;
+
+  RouteHandler _routeHandler;
+  AsyncWebServer _server;
   WebSocketServer _webSocketServer;
   OTAUpdater _otaUpdater;
+  FileSystemManager _fsManager;
+  EpochTimeManager _epochTimeManager;
 
-  void setupRoutes();
-  void mountFileSystem();
   void startMDNS();
-  void handleNotFound(AsyncWebServerRequest* request);
-  void handleOTAUpdate(AsyncWebServerRequest* request);
-  void handleEdit(AsyncWebServerRequest* request);
-  void handleDelete(AsyncWebServerRequest* request);
 };
