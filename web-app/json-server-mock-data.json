@@ -1,0 +1,21 @@
+{
+  "get-calibration-factor": {
+    "calibrationFactor": 1.25
+  },
+  "calibration-records": [{
+      "id": 1,
+      "targetVolume": 100,
+      "observedVolume": 98,
+      "pulseCount": 1200
+    },
+    {
+      "id": 2,
+      "targetVolume": 200,
+      "observedVolume": 195,
+      "pulseCount": 2400
+    }
+  ],
+  "firmware-version": {
+    "version": "1.0.0"
+  }
+}
