@@ -1,3 +1,4 @@
+// ScaledPulseGenerator.cpp
 #include "ScaledPulseGenerator.h"
 
 ScaledPulseGenerator::ScaledPulseGenerator(uint8_t outputPin,
