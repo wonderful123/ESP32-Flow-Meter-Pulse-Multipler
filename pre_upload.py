@@ -18,3 +18,14 @@ def before_upload(source, target, env):
 
     # Update build flag in the environment
     env.Replace(CPPDEFINES=[('FIRMWARE_VERSION', f'"{new_version}"')])
+
+
+import subprocess
+
+def before_build(source, target, env):
+    # Navigate to the web-app directory
+    web_app_dir = "web-app"  # Adjust this path as necessary
+    # Run 'npm run dev'
+    subprocess.run(["npm", "run", "dev"], cwd=web_app_dir, check=True)
+
+env.AddPreAction("buildprog", before_build)
