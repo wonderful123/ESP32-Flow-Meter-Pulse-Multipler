@@ -1,33 +1,36 @@
 // EEPROMManager.cpp
 #include "EEPROMManager.h"
 
-#include <cmath>
-
 EEPROMManager::EEPROMManager(size_t maxRecords) : _maxRecords(maxRecords) {}
 
 void EEPROMManager::begin() {
   EEPROM.begin(EEPROM_SIZE);
   EEPROMHeader header;
-  EEPROM.get(START_ADDRESS, header);
+  EEPROM.get(EEPROM_START_ADDRESS, header);
   if (header.marker != EEPROM_EMPTY_MARKER && header.marker != 0) {
     // EEPROM is uninitialized, set it to empty state
-    header.marker = EEPROM_EMPTY_MARKER;
-    EEPROM.put(START_ADDRESS, header);
-    EEPROM.commit();
+    clearEEPROM();
+  } else if (header.marker == 0) {
+    // EEPROM contains records, but no change needed here
+    // The record count will be read when needed
   }
 }
 
-bool EEPROMManager::saveScalingFactor(float scalingFactor) {
-  int address = EEPROM_SIZE - sizeof(float);  // Save at the end of EEPROM
-  EEPROM.put(address, scalingFactor);
+bool EEPROMManager::saveCalibrationFactor(float calibrationFactor) {
+  if (calibrationFactor <= 0 || isnan(calibrationFactor)) {
+    // Invalid calibration factor
+    return false;
+  }
+  size_t address = EEPROM_SIZE - sizeof(float);  // Save at the end of EEPROM
+  EEPROM.put(address, calibrationFactor);
   return EEPROM.commit();
 }
 
-bool EEPROMManager::loadScalingFactor(float& scalingFactor) const {
-  int address = EEPROM_SIZE - sizeof(float);  // Load from the end of EEPROM
+bool EEPROMManager::loadCalibrationFactor(float& scalingFactor) const {
+  size_t address = EEPROM_SIZE - sizeof(float);
   EEPROM.get(address, scalingFactor);
-  if (std::isnan(scalingFactor)) {  // Check if the read value is not a number
-    scalingFactor = 1.0;       // Default value if not set
+  if (isnan(scalingFactor)) {
+    scalingFactor = 1.0;  // Default scaling factor
     return false;
   }
   return true;
@@ -35,81 +38,132 @@ bool EEPROMManager::loadScalingFactor(float& scalingFactor) const {
 
 bool EEPROMManager::saveCalibrationRecord(size_t index,
                                           const CalibrationRecord& record) {
-  if (index >= _maxRecords) {
-    return false;  // Index is out of bounds
+  EEPROMHeader header;
+  EEPROM.get(EEPROM_START_ADDRESS, header);
+  if (header.marker != EEPROM_EMPTY_MARKER && header.marker != 0) {
+    clearEEPROM();
+    EEPROM.get(EEPROM_START_ADDRESS,
+               header);  // Corrected: No need to declare header again
   }
 
-  int recordSize = calculateRecordSize();
-  int address = START_ADDRESS + EEPROM_HEADER_SIZE +
-                index * recordSize;  // Adjust for header
+  if (index >= _maxRecords) return false;
 
-  if (address + recordSize > EEPROM_SIZE) {
-    return false;  // Ensure we don't go past the EEPROM's storage capacity
-  }
+  size_t recordSize = sizeof(CalibrationRecord);
+  size_t address =
+      EEPROM_START_ADDRESS + EEPROM_HEADER_SIZE + index * recordSize;
 
-  // If it's the first record being saved, update the header to mark EEPROM as
-  // non-empty
-  if (index == 0) {
-    EEPROMHeader header = {0};  // Mark as containing records
-    EEPROM.put(START_ADDRESS, header);
-  }
+  if (address + recordSize > CALIBRATION_FACTOR_ADDRESS)  // Use named constant
+    return false;  // Ensure calibration factor space
 
-  // Write the record to EEPROM at the calculated address
   EEPROM.put(address, record);
-  return EEPROM.commit();  // Save changes to EEPROM
+
+  // No need to fetch header again, already have it from the beginning of this
+  // method
+  if (index >= header.recordCount) {
+    header.recordCount =
+        index + 1;  // Update record count if a new record is added
+    EEPROM.put(EEPROM_START_ADDRESS, header);
+  }
+
+  return EEPROM.commit();
 }
 
 bool EEPROMManager::saveCalibrationRecords(
     const std::vector<CalibrationRecord>& records) {
-  int recordSize = calculateRecordSize();
-  int totalSize = recordSize * records.size();
-  if (totalSize > EEPROM_SIZE - START_ADDRESS)
-    return false;  // Check for size overflow
-
-  int address = START_ADDRESS;
-  for (const auto& record : records) {
-    if (address + recordSize > EEPROM_SIZE) break;  // Prevent overflow
-    EEPROM.put(address, record);
-    address += recordSize;
+  if (records.size() > _maxRecords) {
+    // Attempting to save more records than EEPROM can hold
+    return false;
   }
-  return EEPROM.commit();
+
+  for (size_t i = 0; i < records.size(); i++) {
+    if (!saveCalibrationRecord(i, records[i])) return false;
+  }
+  return true;
 }
 
 bool EEPROMManager::loadCalibrationRecords(
     std::vector<CalibrationRecord>& records) const {
   EEPROMHeader header;
-  EEPROM.get(START_ADDRESS, header);
-  if (header.marker == EEPROM_EMPTY_MARKER) {
-    return false;  // EEPROM is marked as empty, so skip loading records
-  }
+  EEPROM.get(EEPROM_START_ADDRESS, header);
+  if (header.marker == EEPROM_EMPTY_MARKER) return false;
 
   records.clear();
-  int recordSize = calculateRecordSize();
-  CalibrationRecord record;
-  int address = START_ADDRESS;
-  while (address + recordSize <= EEPROM_SIZE) {
+  size_t recordSize = sizeof(CalibrationRecord);
+  for (size_t i = 0; i < header.recordCount; i++) {
+    size_t address = EEPROM_START_ADDRESS + EEPROM_HEADER_SIZE + i * recordSize;
+    if (address + recordSize > EEPROM_SIZE - sizeof(float)) break;
+
+    CalibrationRecord record;
     EEPROM.get(address, record);
-    if (std::isnan(record.targetVolume) && std::isnan(record.observedVolume) &&
-        record.pulseCount == 0xFFFFFFFF) {
-      address += recordSize;  // Skip invalid record
-      continue;
+
+    if (record.targetVolume <= 0 || record.observedVolume <= 0 ||
+        record.pulseCount == 0) {
+      // Record does not meet validation criteria, potentially end of valid
+      // records Consider logging or handling this scenario as needed
+      break;
     }
-    if (record.targetVolume == 0 && record.observedVolume == 0 &&
-        record.scalingFactor == 0)
-      break;  // End of valid data
+
     records.push_back(record);
-    address += recordSize;
-    if (records.size() >= _maxRecords) break;
   }
   return true;
 }
 
-int EEPROMManager::calculateRecordSize() const {
-  return sizeof(CalibrationRecord);
+bool EEPROMManager::deleteCalibrationRecord(size_t index) {
+  if (index >= _maxRecords) {
+    return false;  // Index out of range
+  }
+
+  EEPROMHeader header;
+  EEPROM.get(EEPROM_START_ADDRESS, header);
+
+  if (index >= header.recordCount) {
+    return false;  // Index out of existing records range
+  }
+
+  size_t recordSize = sizeof(CalibrationRecord);
+  size_t moveCount =
+      header.recordCount - index - 1;  // Records after the one to delete
+
+  for (size_t i = 0; i < moveCount; i++) {
+    size_t srcAddress = EEPROM_START_ADDRESS + EEPROM_HEADER_SIZE +
+                        (index + 1 + i) * recordSize;
+    size_t destAddress =
+        EEPROM_START_ADDRESS + EEPROM_HEADER_SIZE + (index + i) * recordSize;
+
+    CalibrationRecord record;
+    EEPROM.get(srcAddress, record);
+    EEPROM.put(destAddress, record);
+  }
+
+  header.recordCount--;  // Decrement the record count
+  EEPROM.put(EEPROM_START_ADDRESS, header);
+
+  // Optional: Clear the now-unused last record space to maintain cleanliness
+  size_t lastRecordAddress = EEPROM_START_ADDRESS + EEPROM_HEADER_SIZE +
+                             header.recordCount * recordSize;
+  CalibrationRecord emptyRecord = {};  // Create an "empty" record
+  EEPROM.put(lastRecordAddress, emptyRecord);
+
+  return EEPROM.commit();
 }
 
 void EEPROMManager::clearEEPROM() {
-  EEPROMHeader header = {EEPROM_EMPTY_MARKER};
-  EEPROM.put(START_ADDRESS, header);  // Set EEPROM to empty state
-  EEPROM.commit();
+  bool needsCommit = false;
+  for (size_t i = 0; i < EEPROM_SIZE; i++) {
+    if (EEPROM.read(i) != 0xFF) {  // Only write if the byte is not already 0xFF
+      EEPROM.write(i, 0xFF);
+      needsCommit = true;
+    }
+  }
+  if (needsCommit) {
+    EEPROM.commit();
+  }
+
+  EEPROMHeader header = {EEPROM_EMPTY_MARKER,
+                         0};  // Reset marker and record count
+  EEPROM.put(EEPROM_START_ADDRESS,
+             header);  // It's assumed this is necessary even if the EEPROM was
+                       // already clear, to ensure the header is correctly set.
+  EEPROM.commit();  // Commit here is necessary to ensure the header update is
+                    // applied.
 }
