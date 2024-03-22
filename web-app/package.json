@@ -10,7 +10,11 @@
     "start": "concurrently \"pnpm run api\" \"webpack serve --mode development --open\"",
     "clean": "rimraf dist/"
   },
-  "keywords": [],
+  "engines": {
+    "node": ">=19.8.1",
+    "pnpm": ">=8.15.4"
+  },
+  "keywords": ["flow meter", "pulse", "calibration", "scaling"],
   "author": "Joshua Jenkins",
   "license": "ISC",
   "devDependencies": {
