@@ -4,5 +4,10 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "ESP8266 Flow Meter Pulse Multipler",
+		"files.associations": {
+			"vector": "cpp"
+		}
+	}
 }
