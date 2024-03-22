@@ -1,35 +1,34 @@
 // CalibrationManager.h
 #pragma once
 
-#include <Arduino.h>
-
 #include <vector>
 
-#include "EEPROMManager.h"  // Include EEPROMManage
-
-constexpr int _maxRecords = 10;
+#include "EEPROMManager.h"
+#include "Settings.h"
 
 class CalibrationManager {
  public:
-  CalibrationManager();
+  explicit CalibrationManager(size_t maxRecords = MAX_CALIBRATION_RECORDS);
   void begin();
   void addCalibrationRecord(float targetVolume, float observedVolume,
-                            unsigned long pulseCount);
+                            unsigned long pulseCount, unsigned long epochTime,
+                            float oilTemp = 0.0f,
+                            const char* oilType = "unknown");
   std::vector<CalibrationRecord> getCalibrationHistory() const;
-  void setScalingFactor(float scalingFactor);
-  float getScalingFactor() const;
+  void setCalibrationFactor(float scalingFactor);
+  float getCalibrationFactor() const;
   void updateCalibrationHistory();
-  void updateCalibrationRecord(int id, float targetVolume, float observedVolume,
-                               unsigned long pulseCount);
-  void deleteCalibrationRecord(int id);
+  void updateCalibrationRecord(size_t id, float targetVolume,
+                               float observedVolume, unsigned long pulseCount);
+  void deleteCalibrationRecord(size_t id);
   void clearCalibrationRecords();
   String getCalibrationRecordsJson() const;
-  String getCalibrationRecordJson(int id) const;
-  bool findRecordById(int id, CalibrationRecord& outRecord) const;
+  String getCalibrationRecordJson(size_t id) const;
+  bool findRecordById(size_t id, CalibrationRecord& outRecord) const;
 
  private:
   std::vector<CalibrationRecord> _calibrationHistory;
-  EEPROMManager _eepromManager;  // Instance of EEPROMManager
-  float calculateScalingFactor(float targetVolume, float observedVolume) const;
-  float selectOptimalScalingFactor() const;
+  EEPROMManager _eepromManager;
+  float calculateCalibrationFactor(float targetVolume,
+                                   float observedVolume) const;
 };

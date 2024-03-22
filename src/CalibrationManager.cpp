@@ -3,50 +3,41 @@
 
 #include <ArduinoJson.h>
 
-CalibrationManager::CalibrationManager()
-    : _eepromManager(_maxRecords) {  // Assume max 10 records
-}
+CalibrationManager::CalibrationManager(size_t maxRecords)
+    : _eepromManager(maxRecords) {}
 
 void CalibrationManager::begin() {
-  _eepromManager.begin();  // Make sure EEPROM is initialized
-  std::vector<CalibrationRecord> records;
-  _eepromManager.loadCalibrationRecords(records);
-  _calibrationHistory = records;  // Update the internal calibration history
+  _eepromManager.begin();
+  _eepromManager.loadCalibrationRecords(_calibrationHistory);
 }
 
-void CalibrationManager::addCalibrationRecord(float targetVolume,
-                                              float observedVolume,
-                                              unsigned long pulseCount) {
-  float scalingFactor = calculateScalingFactor(targetVolume, observedVolume);
-  CalibrationRecord newRecord = {targetVolume, observedVolume, scalingFactor,
-                                 pulseCount};
+void CalibrationManager::addCalibrationRecord(
+    float targetVolume, float observedVolume, unsigned long pulseCount,
+    unsigned long epochTime, float oilTemp, const char* oilType) {
+  CalibrationRecord newRecord;
+  newRecord.targetVolume = targetVolume;
+  newRecord.observedVolume = observedVolume;
+  newRecord.pulseCount = pulseCount;
+  newRecord.oilTemp = oilTemp;
+  strncpy(newRecord.oilType, oilType, sizeof(newRecord.oilType) - 1);
+  newRecord.oilType[sizeof(newRecord.oilType) - 1] =
+      '\0';  // Ensure null-termination
+  newRecord.epochTime = epochTime;
+  newRecord.calibrationFactor =
+      calculateCalibrationFactor(targetVolume, observedVolume);
+
   _calibrationHistory.push_back(newRecord);
-  updateCalibrationHistory();
+  updateCalibrationHistory();  // Reflect the changes in EEPROM
 }
 
-std::vector<CalibrationRecord> CalibrationManager::getCalibrationHistory()
-    const {
-  return _calibrationHistory;
+void CalibrationManager::setCalibrationFactor(float calibrationFactor) {
+  _eepromManager.saveCalibrationFactor(calibrationFactor);
 }
 
-float CalibrationManager::calculateScalingFactor(float targetVolume,
-                                                 float observedVolume) const {
-  if (observedVolume == 0) return 1.0;  // Avoid division by zero
-  return targetVolume / observedVolume;
-}
-
-void CalibrationManager::setScalingFactor(float scalingFactor) {
-  // Save the scaling factor to EEPROM
-  _eepromManager.saveScalingFactor(scalingFactor);
-}
-
-float CalibrationManager::getScalingFactor() const {
-  float scalingFactor;
-  if (!_eepromManager.loadScalingFactor(scalingFactor)) {
-    // If no scaling factor was previously saved, return 1.0
-    return 1.0;
-  }
-  return scalingFactor;
+float CalibrationManager::getCalibrationFactor() const {
+  float calibrationFactor = DEFAULT_CALIBRATION_FACTOR;
+  _eepromManager.loadCalibrationFactor(calibrationFactor);
+  return calibrationFactor;
 }
 
 void CalibrationManager::updateCalibrationHistory() {
@@ -54,86 +45,85 @@ void CalibrationManager::updateCalibrationHistory() {
 }
 
 String CalibrationManager::getCalibrationRecordsJson() const {
-  String json = "[";
-  for (size_t i = 0; i < _calibrationHistory.size(); ++i) {
-    const auto& record = _calibrationHistory[i];
-    char buffer[256];  // Ensure this buffer is large enough for your JSON
-                       // strings.
-    snprintf(buffer, sizeof(buffer),
-             "{\"id\":%zu,\"targetVolume\":%s,\"observedVolume\":%s,"
-             "\"pulseCount\":%lu}",
-             i,
-             isnan(record.targetVolume) ? "null"
-                                        : String(record.targetVolume).c_str(),
-             isnan(record.observedVolume)
-                 ? "null"
-                 : String(record.observedVolume).c_str(),
-             record.pulseCount);
-    if (i > 0) json += ",";
-    json += buffer;
+  JsonDocument doc;
+  JsonArray array = doc.to<JsonArray>();
+
+  for (const auto& record : _calibrationHistory) {
+    JsonObject obj = array.add<JsonObject>();
+    obj["id"] = &record - &_calibrationHistory[0];  // Calculate index
+    obj["targetVolume"] = record.targetVolume;
+    obj["observedVolume"] = record.observedVolume;
+    obj["pulseCount"] = record.pulseCount;
+    obj["oilTemp"] = record.oilTemp;
+    obj["oilType"] = record.oilType;
+    obj["epochTime"] = record.epochTime;
+    obj["calibrationFactor"] = record.calibrationFactor;
   }
-  json += "]";
+
+  String json;
+  serializeJson(doc, json);
   return json;
 }
 
-void CalibrationManager::updateCalibrationRecord(int id, float targetVolume,
+void CalibrationManager::updateCalibrationRecord(size_t id, float targetVolume,
                                                  float observedVolume,
                                                  unsigned long pulseCount) {
-  // Cast _calibrationHistory.size() to int to avoid comparison warnings
-  if (id < 0 || id >= static_cast<int>(_calibrationHistory.size())) return;
+  if (id < _calibrationHistory.size()) {
+    CalibrationRecord& record = _calibrationHistory[id];
+    record.targetVolume = targetVolume;
+    record.observedVolume = observedVolume;
+    record.pulseCount = pulseCount;
+    record.calibrationFactor =
+        calculateCalibrationFactor(targetVolume, observedVolume);
 
-  CalibrationRecord& record = _calibrationHistory[id];
-  record.targetVolume = targetVolume;
-  record.observedVolume = observedVolume;
-  record.scalingFactor = calculateScalingFactor(targetVolume, observedVolume);
-
-  updateCalibrationHistory();  // Persist the updated records to EEPROM
+    updateCalibrationHistory();  // Persist changes to EEPROM
+  }
 }
 
-void CalibrationManager::deleteCalibrationRecord(int id) {
-  if (id >= 0 && id < static_cast<int>(_calibrationHistory.size())) {
-    // Invalidate the record in EEPROM
-    CalibrationRecord& record = _calibrationHistory[id];
-    record.targetVolume = NAN;
-    record.observedVolume = NAN;
-    record.scalingFactor = NAN;
-    record.pulseCount = 0xFFFFFFFF;
-
-    // Update EEPROM with the invalidated record
-    _eepromManager.saveCalibrationRecord(id, record);
-
-    // Remove the record from the in-memory vector
+void CalibrationManager::deleteCalibrationRecord(size_t id) {
+  if (id < _calibrationHistory.size()) {
     _calibrationHistory.erase(_calibrationHistory.begin() + id);
+    updateCalibrationHistory();  // Reflect changes in EEPROM
   }
 }
 
 void CalibrationManager::clearCalibrationRecords() {
-  _calibrationHistory.clear();  // Clear the in-memory history
-  _eepromManager
-      .clearEEPROM();  // Delegate to EEPROMManager to clear the EEPROM
+  _calibrationHistory.clear();
+  _eepromManager.clearEEPROM();  // Also clear EEPROM records
 }
 
-String CalibrationManager::getCalibrationRecordJson(int id) const {
-  CalibrationRecord record;
-  findRecordById(id, record);
+String CalibrationManager::getCalibrationRecordJson(size_t id) const {
+  if (id >= _calibrationHistory.size()) {
+    return "{}";  // Return empty JSON object if id is out of range
+  }
 
-  JsonDocument doc;  // Adjust size based on your needs
+  const auto& record = _calibrationHistory[id];
+  JsonDocument doc;
 
+  doc["id"] = id;
   doc["targetVolume"] = record.targetVolume;
   doc["observedVolume"] = record.observedVolume;
-  doc["scalingFactor"] = record.scalingFactor;
   doc["pulseCount"] = record.pulseCount;
+  // Include other fields as needed
 
   String json;
-  ArduinoJson::serializeJson(doc, json);
-
+  serializeJson(doc, json);
   return json;
 }
 
-bool CalibrationManager::findRecordById(int id,
+bool CalibrationManager::findRecordById(size_t id,
                                         CalibrationRecord& outRecord) const {
-  if (id < 0 || static_cast<size_t>(id) >= _calibrationHistory.size())
-    return false;
-  outRecord = _calibrationHistory[id];
-  return true;
+  if (id < _calibrationHistory.size()) {
+    outRecord = _calibrationHistory[id];
+    return true;
+  }
+  return false;
+}
+
+float CalibrationManager::calculateCalibrationFactor(
+    float targetVolume, float observedVolume) const {
+  if (observedVolume == 0)
+    return 0;  // Avoid division by zero or return a default value
+
+  return targetVolume / observedVolume;
 }
