@@ -1,9 +1,11 @@
+// index.js
 import m from "mithril";
+
 import "../public/styles/bulma.min.css";
 import "../public/styles/bulma-cyborg-theme.css";
 import "../public/styles/styles.css";
 
-const CalibrationPage = require("./views/CalibrationPage");
+import CalibrationPage from "./views/CalibrationPage";
 
 // Define routes
 const routes = {
