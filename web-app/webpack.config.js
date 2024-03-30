@@ -16,6 +16,11 @@ module.exports = {
   devServer: {
     static: './dist',
     open: true,
+    hot: true
+  },
+  watchOptions: {
+    ignored: /node_modules/, // Ignore node_modules by default
+    poll: true, // Use polling if necessary (use as a last resort)
   },
   plugins: [
     new HtmlWebpackPlugin({
