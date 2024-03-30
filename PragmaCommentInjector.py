@@ -34,7 +34,7 @@ def update_files(directory):
     print(f"{OKBLUE}File Updates:{ENDC}")
     for root, _dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith((".h", ".cpp")):
+            if file.endswith((".h", ".cpp", ".js")):
                 file_path = os.path.join(root, file)
                 file_updated, actions = process_file(file_path, stats)
                 if actions:
@@ -176,3 +176,4 @@ def print_summary(stats):
 # Update files in the /lib directory
 update_files("./src")
 update_files("./include")
+update_files("./web-app/src")
