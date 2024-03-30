@@ -12,7 +12,7 @@ WebServerManager::WebServerManager(CalibrationManager& calibrationManager,
       _routeHandler(calibrationManager, pulseCounter, _otaUpdater, *this),
       _server(80),
       _webSocketServer(WEBSOCKET_PORT),
-      _otaUpdater(),
+      _otaUpdater(_webSocketServer),
       _fsManager() {}
 
 void WebServerManager::begin() {
@@ -26,7 +26,7 @@ void WebServerManager::begin() {
                  WiFi.localIP().toString());
   startMDNS();
   _epochTimeManager.begin();
-  _otaUpdater.begin(_webSocketServer);
+  _otaUpdater.begin();
 }
 
 void WebServerManager::update() {
