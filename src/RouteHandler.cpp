@@ -182,7 +182,7 @@ void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
-  DynamicJsonDocument doc(1024);
+  JsonDocument doc;
   doc["current-version"] = FIRMWARE_VERSION;
 
   String updateInfo = _otaUpdater.checkForUpdate();
