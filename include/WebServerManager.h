@@ -21,6 +21,7 @@ class WebServerManager {
   void begin();
   void update();
   void broadcastPulseCount(unsigned long pulseCount);
+  void broadcastWebsocketMessage(String& type, JsonVariant& data);
   EpochTimeManager& getEpochTimeManager();
 
  private:

@@ -67,6 +67,21 @@ void WebSocketServer::broadcastPulseCount(unsigned long pulseCount) {
   _webSocket.textAll(message);
 }
 
+void WebSocketServer::broadcastMessage(const String& type,
+                                       const JsonVariant& data) {
+  JsonDocument doc;
+
+  doc["type"] = type;
+  doc["data"] = data;
+
+  // Serialize JSON to string
+  String message;
+  serializeJson(doc, message);
+
+  // Broadcast the message to all connected WebSocket clients
+  _webSocket.textAll(message);
+}
+
 void WebSocketServer::handleConnect(AsyncWebSocketClient* client, void* arg,
                                     uint8_t* data, size_t len) {
   Serial.printf("[WebSocket] Client [%u] connected.\n", client->id());

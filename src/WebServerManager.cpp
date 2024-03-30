@@ -1,6 +1,8 @@
 // WebServerManager.cpp
 #include "WebServerManager.h"
 
+#include <ArduinoJson.h>
+
 #include "Settings.h"
 
 WebServerManager::WebServerManager(CalibrationManager& calibrationManager,
@@ -24,7 +26,7 @@ void WebServerManager::begin() {
                  WiFi.localIP().toString());
   startMDNS();
   _epochTimeManager.begin();
-  _otaUpdater.begin();
+  _otaUpdater.begin(_webSocketServer);
 }
 
 void WebServerManager::update() {
@@ -35,6 +37,11 @@ void WebServerManager::update() {
 
 void WebServerManager::broadcastPulseCount(unsigned long pulseCount) {
   _webSocketServer.broadcastPulseCount(pulseCount);
+}
+
+void WebServerManager::broadcastWebsocketMessage(String& type,
+                                                 JsonVariant& data) {
+  _webSocketServer.broadcastMessage(type, data);
 }
 
 void WebServerManager::startMDNS() {
