@@ -1,14 +1,31 @@
-var m = require("mithril");
-var CalibrationFactorModel = require("../models/CalibrationFactorModel");
+// CalibrationFactor.js
+import m from "mithril";
+import CalibrationFactorModel from "../models/CalibrationFactorModel";
 
-var CalibrationFactor = {
+const CalibrationFactor = {
   oninit: CalibrationFactorModel.loadCalibrationFactor,
   view: function () {
-    return m("div.calibration-factor", [
-      m("h3", "Current Calibration Factor"),
-      CalibrationFactorModel.factor !== null ? m("p", CalibrationFactorModel.factor) : m("p", "Loading...")
-    ]);
+    const currentCalibrationFactor = (CalibrationFactorModel.factor !== null && CalibrationFactorModel.factor !== undefined) ?
+      CalibrationFactorModel.factor.toFixed(2) :
+      "Loading...";
+
+    return m("div.box#calibration-factor-container", {
+      class: "is-flex is-justify-content-space-between p-0"
+    }, [
+      // Subtitle on the left half of the box
+      m("div", {
+        class: "flex-grow-1 is-align-self-center"
+      }, [
+        m("h4.subtitle.p-5", "Current Output Scaling:")
+      ]),
+      // Calibration factor on the right half of the box
+      m("div", {
+        class: "flex-grow-1 is-align-self-center"
+      }, [
+        m("div.notification#current-calibration-factor.px-6.py-5", [m("h4.subtitle", currentCalibrationFactor)])
+      ])
+    ])
   }
 };
 
-module.exports = CalibrationFactor;
+export default CalibrationFactor;
