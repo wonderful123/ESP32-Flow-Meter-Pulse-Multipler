@@ -1,20 +1,27 @@
+// CalibrationPage.js
 import m from "mithril";
-import CalibrationForm from "./CalibrationForm";
-import CalibrationList from "./CalibrationList";
+import SectionContainer from './components/SectionContainer';
+import TitleAndSubtitle from "./components/TitleAndSubtitle";
+import CalibrationForm from "./calibration-form";
+import CalibrationRecords from "./calibration-records";
 import CalibrationFactor from "./CalibrationFactor";
-import Calibration from "../models/Calibration";
+import StatusMessageBox from "./components/StatusMessageBox";
+import FirmwareUpdate from "./FirmwareUpdate";
 
 const CalibrationPage = {
-  oninit: function () {
-    Calibration.loadList();
-  },
   view: function () {
-    return m("div", [
-      m("h1.title has-text-centered", "Pulse Scaling Calibration"),
-      m(CalibrationFactor), // Display the current calibration factor
-      m(CalibrationForm), // Form for submitting new calibration records
-      m(CalibrationList), // List of existing calibration records
-    ]);
+    return m(SectionContainer,
+      [
+        m(TitleAndSubtitle, {
+          title: "Pulse Scaling Calibration",
+          subtitle: "[Pins: Input D3 and Output D7]"
+        }),
+        m(CalibrationFactor), // Display the current calibration factor
+        m(StatusMessageBox), // Display status messages
+        m(CalibrationForm), // Form for submitting new calibration records
+        m(CalibrationRecords), // List of existing calibration records
+        m(FirmwareUpdate) // Display firmware update component
+      ]);
   }
 };
 
