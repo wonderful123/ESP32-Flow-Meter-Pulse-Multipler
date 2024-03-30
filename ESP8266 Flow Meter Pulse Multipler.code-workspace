@@ -7,7 +7,20 @@
 	"settings": {
 		"liveServer.settings.multiRootWorkspaceName": "ESP8266 Flow Meter Pulse Multipler",
 		"files.associations": {
-			"vector": "cpp"
+			"vector": "cpp",
+			"array": "cpp",
+			"charconv": "cpp",
+			"chrono": "cpp",
+			"compare": "cpp",
+			"functional": "cpp",
+			"istream": "cpp",
+			"ostream": "cpp",
+			"ranges": "cpp",
+			"ratio": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp",
+			"variant": "cpp"
 		}
 	}
 }
