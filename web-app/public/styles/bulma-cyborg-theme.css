@@ -6589,7 +6589,7 @@ a.list-item {
 }
 
 .message {
-  background-color: #363636;
+  /* background-color: #363636; */
   border-radius: 4px;
   font-size: 1rem
 }
@@ -6658,7 +6658,7 @@ a.list-item {
 .message.is-dark .message-body {
   border-color: #363636
 }
-
+/* 
 .message.is-primary {
   background-color: #55b2de
 }
@@ -6773,7 +6773,7 @@ a.list-item {
   border-width: 0 0 0 4px;
   color: #fff;
   padding: 1.25em 1.5em
-}
+} */
 
 .modal {
   align-items: center;
@@ -11759,7 +11759,7 @@ print {
 .card .card-footer-item {
   border-color: #424242
 }
-
+/* 
 .message-header {
   background-color: #242424;
   color: #fff
@@ -11767,7 +11767,7 @@ print {
 
 .message-body {
   border-color: #242424
-}
+} */
 
 .modal-card-body {
   background-color: #242424
@@ -11794,5 +11794,3 @@ print {
 .hero .navbar .navbar-menu {
   border: 0
 }
-
-/*# sourceMappingURL=bulmaswatch.min.css.map */
