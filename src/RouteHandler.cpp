@@ -1,6 +1,8 @@
 // RouteHandler.cpp
 #include "RouteHandler.h"
 
+#include <ArduinoJson.h>
+
 #include "Settings.h"
 #include "WebServerManager.h"
 
@@ -180,13 +182,39 @@ void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
-  request->send(200, "text/plain", FIRMWARE_VERSION);
+  DynamicJsonDocument doc(1024);
+  doc["current-version"] = FIRMWARE_VERSION;
+
+  String updateInfo = _otaUpdater.checkForUpdate();
+  if (updateInfo.startsWith("ERROR:")) {
+    // Error case
+    doc["error"] = updateInfo;  // Pass the error to the web app
+  } else if (updateInfo == "NO_UPDATE") {
+    // No update available
+    doc["info"] = "Your firmware is up to date.";
+  } else {
+    // New version available, assuming updateInfo format is "version|changes"
+    int separatorIndex = updateInfo.indexOf('|');
+    if (separatorIndex != -1) {
+      String newVersion = updateInfo.substring(0, separatorIndex);
+      String changes = updateInfo.substring(separatorIndex + 1);
+
+      doc["new-version"] = newVersion;
+      doc["changes"] = changes;
+    } else {
+      // Just in case the format is unexpected
+      doc["error"] = "Unexpected update information format.";
+    }
+  }
+
+  String response;
+  serializeJson(doc, response);
+  request->send(200, "application/json", response);
 }
 
 void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
   if (request->hasArg("url")) {
-    _otaUpdater.performOTAUpdate(
-        OTA_FIRMWARE_URL);  // Trigger the OTA update with the URL
+    _otaUpdater.performOTAUpdate();  // Trigger the OTA update with the URL
     request->send(200, "text/plain", "Attempting to perform OTA update...");
   } else {
     request->send(400, "text/plain", "Missing URL parameter for OTA update.");
