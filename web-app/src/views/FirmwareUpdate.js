@@ -3,7 +3,11 @@ import m from "mithril";
 import FirmwareModel from "../models/FirmwareModel";
 
 const FirmwareStatusBox = {
-  oninit: FirmwareModel.getFirmwareVersion,
+  oninit: function (vnode) {
+    FirmwareModel.getFirmwareVersion();
+    FirmwareModel.initWebSocket(); // Initialize WebSocket connection and handling
+  },
+
   view: function () {
     return m("div.box", [
       m("p#firmware-version", FirmwareModel.isLoading ? "Checking firmware version..." : "Current Firmware Version: " + FirmwareModel.currentVersion),
@@ -12,6 +16,11 @@ const FirmwareStatusBox = {
       FirmwareModel.updateAvailable ? m("button.button.is-success", {
         onclick: FirmwareModel.performOTAUpdate,
       }, "Perform Update") : null,
+      // Conditionally display the progress bar if an update is in progress
+      FirmwareModel.progress > 0 ? m("progress.progress.is-small.is-primary", {
+        max: "100",
+        value: FirmwareModel.progress
+      }, `${FirmwareModel.progress}%`) : null
     ]);
   }
 };
