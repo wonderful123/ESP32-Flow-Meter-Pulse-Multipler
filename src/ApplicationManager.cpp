@@ -1,6 +1,8 @@
 // ApplicationManager.cpp
 #include "ApplicationManager.h"
 
+#include <ArduinoJson.h>
+
 #include "Settings.h"
 
 ApplicationManager::ApplicationManager()
@@ -37,6 +39,9 @@ void ApplicationManager::broadcastPulseCountAtInterval(
   unsigned long currentTime = millis();
   if (currentTime - lastBroadcastTime >= interval) {
     lastBroadcastTime = currentTime;
-    webServerManager.broadcastPulseCount(pulseCounter.getPulseCount());
+    String type = "pulseCount";
+    JsonVariant doc;
+    doc["data"] = pulseCounter.getPulseCount();
+    webServerManager.broadcastWebsocketMessage(type, doc);
   }
 }
