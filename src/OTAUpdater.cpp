@@ -71,38 +71,48 @@ void OTAUpdater::begin() {
 
 void OTAUpdater::handle() { ArduinoOTA.handle(); }
 
-String OTAUpdater::checkForUpdate() {
+void OTAUpdater::checkForUpdate() {
   HTTPClient http;
   WiFiClient client;
   http.begin(client, OTA_FIRMWARE_VERSION_URL);  // Defined in Settings.h
   int httpCode = http.GET();
 
-  JsonDocument doc;
+  JsonDocument responseDoc;
   if (httpCode == HTTP_CODE_OK) {
     String payload = http.getString();
     http.end();
 
-    DeserializationError error = deserializeJson(doc, payload);
+    JsonDocument payloadDoc;  // Separate document for parsing the payload
+    DeserializationError error = deserializeJson(payloadDoc, payload);
     if (error) {
       Serial.println("Failed to parse JSON");
-      return "ERROR: Failed to parse JSON";
-    }
+      responseDoc["type"] = "error";
+      responseDoc["data"]["message"] = "Failed to parse JSON";
+    } else {
+      String newVersion = payloadDoc["version"].as<String>();
+      String changes = payloadDoc["changes"].as<String>();
 
-    String newVersion = doc["version"].as<String>();
-    String changes = doc["changes"].as<String>();
-
-    Serial.println("Current firmware version: " + String(FIRMWARE_VERSION));
-    Serial.println("Available firmware version: " + newVersion);
-    if (newVersion != FIRMWARE_VERSION) {
-      return newVersion + "|" + changes;
+      Serial.println("Current firmware version: " + String(FIRMWARE_VERSION));
+      Serial.println("Available firmware version: " + newVersion);
+      if (newVersion != FIRMWARE_VERSION) {
+        responseDoc["type"] = "updateAvailable";
+        responseDoc["data"]["newVersion"] = newVersion;
+        responseDoc["data"]["changes"] = changes;
+      } else {
+        responseDoc["type"] = "noUpdate";
+        responseDoc["data"]["message"] = "Your firmware is up to date.";
+      }
     }
-    return "NO_UPDATE";
   } else {
     Serial.printf("Failed to check for firmware updates, HTTP code: %d\n",
                   httpCode);
-    http.end();
-    return "ERROR: HTTP request failed";
+    responseDoc["type"] = "error";
+    responseDoc["data"]["message"] =
+        "HTTP request failed with code: " + String(httpCode);
   }
+
+  // Utilize the broadcastMessage method correctly
+  _webSocketServer.broadcastMessage(responseDoc["type"], responseDoc["data"]);
 }
 
 void OTAUpdater::performOTAUpdate() {

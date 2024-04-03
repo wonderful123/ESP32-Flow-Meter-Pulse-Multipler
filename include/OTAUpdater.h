@@ -13,7 +13,7 @@ class OTAUpdater {
   void begin();
   void handle();
   void performOTAUpdate();
-  String checkForUpdate();
+  void checkForUpdate();
 
  private:
   WebSocketServer& _webSocketServer;
