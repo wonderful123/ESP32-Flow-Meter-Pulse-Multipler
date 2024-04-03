@@ -182,34 +182,12 @@ void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
-  JsonDocument doc;
-  doc["current-version"] = FIRMWARE_VERSION;
+  // Directly call checkForUpdate without handling the response here.
+  // OTAUpdater will broadcast the update status over WebSocket.
+  _otaUpdater.checkForUpdate();
 
-  String updateInfo = _otaUpdater.checkForUpdate();
-  if (updateInfo.startsWith("ERROR:")) {
-    // Error case
-    doc["error"] = updateInfo;  // Pass the error to the web app
-  } else if (updateInfo == "NO_UPDATE") {
-    // No update available
-    doc["info"] = "Your firmware is up to date.";
-  } else {
-    // New version available, assuming updateInfo format is "version|changes"
-    int separatorIndex = updateInfo.indexOf('|');
-    if (separatorIndex != -1) {
-      String newVersion = updateInfo.substring(0, separatorIndex);
-      String changes = updateInfo.substring(separatorIndex + 1);
-
-      doc["new-version"] = newVersion;
-      doc["changes"] = changes;
-    } else {
-      // Just in case the format is unexpected
-      doc["error"] = "Unexpected update information format.";
-    }
-  }
-
-  String response;
-  serializeJson(doc, response);
-  request->send(200, "application/json", response);
+  request->send(202, "application/json",
+                "{\"message\": \"Update check initiated.\"}");
 }
 
 void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
