@@ -1,3 +1,20 @@
+.navbar span {
+  font-weight: 600;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+}
+
+p {
+  margin-block-end: revert;
+}
+
+#current-calibration-factor {
+  white-space: nowrap;
+}
+
 #calibration-form .field {
   margin-top: 1rem;
 }
@@ -78,12 +95,6 @@
 
 .icon-class {
   fill: rgb(150, 150, 150);
-}
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .section {
