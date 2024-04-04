@@ -5,10 +5,10 @@ FileSystemManager::FileSystemManager() {}
 
 bool FileSystemManager::mountFileSystem() {
   if (!LittleFS.begin()) {
-    Serial.println("Error: Failed to mount LittleFS");
+    Serial.println("[FileSystemManager] Error: Failed to mount LittleFS");
     return false;
   }
-  Serial.println("LittleFS mounted successfully");
+  Serial.println("[FileSystemManager] LittleFS mounted successfully");
   return true;
 }
 
