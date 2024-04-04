@@ -1,9 +1,9 @@
 // CalibrationTable.js
 import m from "mithril";
 import CalibrationTableRow from "./CalibrationTableRow";
-import CalibrationRecordsModel from "../../models/CalibrationRecordsModel";
-import CalibrationFactorModel from "../../models/CalibrationFactorModel";
-import StatusMessageService from "../../services/StatusMessageService";
+import CalibrationRecordsModel from "models/CalibrationRecordsModel";
+import CalibrationFactorModel from "models/CalibrationFactorModel";
+import StatusMessageService from "services/StatusMessageService";
 
 const CalibrationTable = {
   selectedRowId: null,

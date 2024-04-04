@@ -1,6 +1,6 @@
 // VolumeInput.js
 import m from "mithril";
-import IconDrop from "../components/IconDrop";
+import IconDrop from "icons/IconDrop";
 
 const VolumeInput = {
   view: function (vnode) {

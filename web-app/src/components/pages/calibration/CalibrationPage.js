@@ -1,12 +1,11 @@
 // CalibrationPage.js
 import m from "mithril";
-import SectionContainer from './components/SectionContainer';
-import TitleAndSubtitle from "./components/TitleAndSubtitle";
-import CalibrationForm from "./calibration-form";
-import CalibrationRecords from "./calibration-records";
+import SectionContainer from 'components/common/SectionContainer';
+import TitleAndSubtitle from "components/common/TitleAndSubtitle";
+import CalibrationForm from "./calibration-form/CalibrationForm"
+import CalibrationRecords from "./calibration-records/CalibrationRecords";
 import CalibrationFactor from "./CalibrationFactor";
-import StatusMessageBox from "./components/StatusMessageBox";
-import FirmwareUpdate from "./FirmwareUpdate";
+import StatusMessageBox from "components/common/StatusMessageBox";
 
 const CalibrationPage = {
   view: function () {
@@ -20,7 +19,6 @@ const CalibrationPage = {
         m(StatusMessageBox), // Display status messages
         m(CalibrationForm), // Form for submitting new calibration records
         m(CalibrationRecords), // List of existing calibration records
-        m(FirmwareUpdate) // Display firmware update component
       ]);
   }
 };

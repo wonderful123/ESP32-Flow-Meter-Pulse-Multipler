@@ -1,6 +1,6 @@
 // FirmwareUpdate.js
 import m from "mithril";
-import FirmwareModel from "../models/FirmwareModel";
+import FirmwareModel from "models/FirmwareModel";
 
 const FirmwareStatusBox = {
   oninit: function (vnode) {

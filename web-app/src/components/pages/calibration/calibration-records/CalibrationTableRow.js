@@ -1,8 +1,8 @@
 // CalibrationTableRow.js
 import m from "mithril";
-import IconTrash from "../components/IconTrash";
-import IconChecked from "../components/IconChecked";
-import IconUnchecked from "../components/IconUnchecked";
+import IconTrash from "icons/IconTrash";
+import IconChecked from "icons/IconChecked";
+import IconUnchecked from "icons/IconUnchecked";
 
 const CalibrationTableRow = {
   view: function ({

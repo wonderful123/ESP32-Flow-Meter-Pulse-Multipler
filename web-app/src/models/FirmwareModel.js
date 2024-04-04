@@ -1,6 +1,6 @@
 // FirmwareModel.js
 import m from "mithril";
-import WebSocketService from "../services/WebSocketService";
+import WebSocketService from "services/WebSocketService";
 
 const FirmwareModel = {
   currentVersion: "Fetching...",

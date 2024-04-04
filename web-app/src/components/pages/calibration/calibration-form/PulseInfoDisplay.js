@@ -1,5 +1,5 @@
 import m from "mithril";
-import WebSocketService from "../../services/WebSocketService"; // Adjust the path as needed
+import WebSocketService from "services/WebSocketService";
 
 const PulseInfoDisplay = {
   oninit(vnode) {

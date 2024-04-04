@@ -1,6 +1,6 @@
 // StatusMessageBox.js
 import m from "mithril";
-import StatusMessageService from "../../services/StatusMessageService";
+import StatusMessageService from "services/StatusMessageService";
 
 const typeClassMap = {
   success: 'is-success',

@@ -1,6 +1,6 @@
 // CalibrationFactorModel.js
 import m from "mithril";
-import StatusMessageService from "../services/StatusMessageService";
+import StatusMessageService from "services/StatusMessageService";
 
 const CalibrationFactorModel = {
   factor: null,
