@@ -9,12 +9,8 @@
   50000  // The generated scaled pulse is dynamic however this sets the base
          // duration until input pulses are generated and timing is adjusted.
 
-#define OTA_FIRMWARE_URL                                               \
-  "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/" \
-  "firmware.bin"
-#define OTA_FIRMWARE_VERSION_URL                                       \
-  "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/" \
-  "version.json"
+#define OTA_FIRMWARE_URL "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/firmware.bin"
+#define OTA_FIRMWARE_VERSION_URL "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/version.json"
 #define MDNS_DOMAIN_NAME "pulse-scaler"
 
 #define DEFAULT_CALIBRATION_FACTOR 1.0
