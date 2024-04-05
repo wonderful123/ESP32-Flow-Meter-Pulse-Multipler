@@ -17,4 +17,9 @@ class OTAUpdater {
 
  private:
   WebSocketServer& _webSocketServer;
+
+  void broadcastError(const String& message);
+  void broadcastUpdateAvailable(const String& newVersion,
+                                const String& changes);
+  void broadcastNoUpdate();
 };
