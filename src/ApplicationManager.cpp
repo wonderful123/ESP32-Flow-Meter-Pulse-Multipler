@@ -3,6 +3,8 @@
 
 #include <ArduinoJson.h>
 
+#include "DebugUtils.h"
+#include "Logger.h"
 #include "Settings.h"
 
 ApplicationManager::ApplicationManager()
@@ -14,22 +16,30 @@ ApplicationManager::ApplicationManager()
       scaledPulseGenerator(SCALED_OUTPUT_PIN, BASE_PULSE_DURATION_MICROS) {}
 
 void ApplicationManager::begin() {
-  Serial.begin(115200);
 #ifdef FIRMWARE_VERSION
-  Serial.println("Firmware version: " FIRMWARE_VERSION);
+  LOG_INFO("Firmware version: " FIRMWARE_VERSION);
 #endif
 
   wiFiSetup.begin();
   pulseCounter.begin();
   calibrationManager.begin();
+  float outputScalingFactor = calibrationManager.getCalibrationFactor();
+  scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
   webServerManager.begin();
+
+  String resetReason = ESP.getResetReason();
+  LOG_DEBUG("Previous Reset Reason: " + std::string(resetReason.c_str()));
+  DebugUtils::logMemoryUsage();
+  LOG_INFO("===========================================");
+  LOG_INFO("STARTUP COMPLETE: System is now operational");
+  LOG_INFO("===========================================");
 }
 
 void ApplicationManager::loop() {
-  float outputScalingFactor = calibrationManager.getCalibrationFactor();
-  scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
-
+  // Broadcast pulse count at defined interval
   broadcastPulseCountAtInterval(PULSE_BROADCAST_INTERVAL);
+
+  // Update web server manager
   webServerManager.update();
 }
 
