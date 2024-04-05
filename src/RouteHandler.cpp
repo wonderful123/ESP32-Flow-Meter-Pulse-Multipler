@@ -66,6 +66,9 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
   server.onNotFound([this](AsyncWebServerRequest* request) {
     this->handleNotFound(request);
   });
+
+  // Serve static files from LittleFS
+  server.serveStatic("/", LittleFS, "www/").setDefaultFile("index.html");
 }
 
 void RouteHandler::getCalibrationFactor(AsyncWebServerRequest* request) {
