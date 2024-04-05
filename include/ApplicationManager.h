@@ -26,6 +26,5 @@ class ApplicationManager {
 
   float outputScalingFactor;
 
-  void handleScaledOutput();
   void broadcastPulseCountAtInterval(const unsigned long interval);
 };
