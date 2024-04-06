@@ -8,7 +8,10 @@ ApplicationManager appManager;
 void serialLogCallback(Logger::Level level, const std::string& message);
 void initializeLogger();
 
-void setup() { appManager.begin(); }
+void setup() {
+  initializeLogger();
+  appManager.begin();
+}
 
 void loop() { appManager.loop(); }
 
