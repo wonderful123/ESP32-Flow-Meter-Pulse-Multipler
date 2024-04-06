@@ -2,7 +2,9 @@
 #include "OTAUpdater.h"
 
 #include <ArduinoJson.h>
+#include <ESP8266WiFi.h>
 #include <ESP8266httpUpdate.h>
+#include <ESPAsyncTCP.h>
 
 #include "Settings.h"
 
@@ -10,7 +12,7 @@ void OTAUpdater::begin() {
   ArduinoOTA.onStart([this]() {
     const char* commandType =
         ArduinoOTA.getCommand() == U_FLASH ? "sketch" : "filesystem";
-    Serial.println("Start OTA updating " + String(commandType));
+    LOG_INFO("Start OTA updating " + String(commandType));
 
     JsonDocument doc;
     String type = "status";
@@ -19,8 +21,7 @@ void OTAUpdater::begin() {
   });
 
   ArduinoOTA.onEnd([this]() {
-    Serial.println("\nEnd");
-
+    LOG_INFO(F("OTA Update completed"); 
     JsonDocument doc;
     String type = "status";
     doc["message"] = "Update complete";
@@ -28,8 +29,8 @@ void OTAUpdater::begin() {
   });
 
   ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
-    Serial.printf("OTA Progress: %u%%\r", (progress * 100) / total);
-
+    float progressPercentage = (float)progress / (float)total * 100.0f;
+    LOG_INFO("OTA Progress: " + String(progressPercentage, 2) + "%");
     JsonDocument doc;
     String type = "progress";
     doc["percentage"] = (progress * 100) / total;
@@ -58,7 +59,9 @@ void OTAUpdater::begin() {
         errorMsg = "Unknown Error";
         break;
     }
-    Serial.printf("OTA Error[%u]: %s\n", error, errorMsg);
+    std::string errorMessage =
+        "OTA Error[" + std::to_string(error) + "]: " + std::string(errorMsg);
+    LOG_ERROR(errorMessage);
 
     JsonDocument doc;
     String type = "error";
@@ -74,44 +77,76 @@ void OTAUpdater::handle() { ArduinoOTA.handle(); }
 void OTAUpdater::checkForUpdate() {
   HTTPClient http;
   WiFiClient client;
-  http.begin(client, OTA_FIRMWARE_VERSION_URL);  // Defined in Settings.h
+  http.begin(client, OTA_FIRMWARE_VERSION_URL);
+  int httpCodex = http.GET();  // This might take time, especially if the server
+                               // is slow to respond.
+
+  if (httpCodex > 0) {
+    if (httpCodex == HTTP_CODE_OK) {
+      String payload = http.getString();
+      LOG_DEBUG(payload);
+    }
+  } else {
+    LOG_ERROR("Error on HTTP request");
+  }
+
+  while (client.available()) {
+    char ch = static_cast<char>(client.read());
+  }
   int httpCode = http.GET();
 
-  JsonDocument responseDoc;
   if (httpCode == HTTP_CODE_OK) {
     String payload = http.getString();
     http.end();
 
-    JsonDocument payloadDoc;  // Separate document for parsing the payload
+    // Print the raw payload for debugging
+    LOG_DEBUG("Raw payload from server:");
+    LOG_DEBUG(payload);
+
+    JsonDocument payloadDoc;
     DeserializationError error = deserializeJson(payloadDoc, payload);
     if (error) {
-      Serial.println("Failed to parse JSON");
-      responseDoc["type"] = "error";
-      responseDoc["data"]["message"] = "Failed to parse JSON";
+      LOG_ERROR("Failed to parse JSON payload: " + String(error.c_str()));
+      broadcastError("Failed to parse JSON");
     } else {
       String newVersion = payloadDoc["version"].as<String>();
       String changes = payloadDoc["changes"].as<String>();
-
-      Serial.println("Current firmware version: " + String(FIRMWARE_VERSION));
-      Serial.println("Available firmware version: " + newVersion);
+      LOG_INFO("Current firmware version: " + String(FIRMWARE_VERSION));
+      LOG_INFO("Available firmware version: " + newVersion);
       if (newVersion != FIRMWARE_VERSION) {
-        responseDoc["type"] = "updateAvailable";
-        responseDoc["data"]["newVersion"] = newVersion;
-        responseDoc["data"]["changes"] = changes;
+        broadcastUpdateAvailable(newVersion, changes);
       } else {
-        responseDoc["type"] = "noUpdate";
-        responseDoc["data"]["message"] = "Your firmware is up to date.";
+        broadcastNoUpdate();
       }
     }
   } else {
-    Serial.printf("Failed to check for firmware updates, HTTP code: %d\n",
-                  httpCode);
-    responseDoc["type"] = "error";
-    responseDoc["data"]["message"] =
-        "HTTP request failed with code: " + String(httpCode);
+    LOG_ERROR("Failed to check for firmware updates, HTTP code: " +
+              std::to_string(httpCode));
+    broadcastError("HTTP request failed with code: " +
+                   std::to_string(httpCode));
   }
+}
 
-  // Utilize the broadcastMessage method correctly
+void OTAUpdater::broadcastError(const String& message) {
+  JsonDocument responseDoc;
+  responseDoc["type"] = "error";
+  responseDoc["data"]["message"] = message;
+  _webSocketServer.broadcastMessage(responseDoc["type"], responseDoc["data"]);
+}
+
+void OTAUpdater::broadcastUpdateAvailable(const String& newVersion,
+                                          const String& changes) {
+  JsonDocument responseDoc;
+  responseDoc["type"] = "updateAvailable";
+  responseDoc["data"]["newVersion"] = newVersion;
+  responseDoc["data"]["changes"] = changes;
+  _webSocketServer.broadcastMessage(responseDoc["type"], responseDoc["data"]);
+}
+
+void OTAUpdater::broadcastNoUpdate() {
+  JsonDocument responseDoc;
+  responseDoc["type"] = "noUpdate";
+  responseDoc["data"]["message"] = "Your firmware is up to date.";
   _webSocketServer.broadcastMessage(responseDoc["type"], responseDoc["data"]);
 }
 
@@ -123,20 +158,19 @@ void OTAUpdater::performOTAUpdate() {
   JsonDocument doc;
   switch (ret) {
     case HTTP_UPDATE_FAILED:
-      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-                    ESPhttpUpdate.getLastError(),
-                    ESPhttpUpdate.getLastErrorString().c_str());
+      LOG_ERROR("HTTP_UPDATE_FAILED: " + "(" + ESPhttpUpdate.getLastError() +
+                ")" + ESPhttpUpdate.getLastErrorString());
       messageType = "error";
       doc["message"] =
           "HTTP_UPDATE_FAILED: " + ESPhttpUpdate.getLastErrorString();
       break;
     case HTTP_UPDATE_NO_UPDATES:
-      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      LOG_INFO("HTTP_UPDATE_NO_UPDATES - No updates available");
       messageType = "status";
       doc["message"] = "No updates available";
       break;
     case HTTP_UPDATE_OK:
-      Serial.println("HTTP_UPDATE_OK");
+      LOG_INFO("HTTP_UPDATE_OK - Update successful");
       messageType = "status";
       doc["message"] = "Update successful";
       break;
