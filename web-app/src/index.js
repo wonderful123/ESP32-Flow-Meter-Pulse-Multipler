@@ -1,8 +1,6 @@
 // index.js
 import m from "mithril";
 
-import "../public/styles/bulma.min.css";
-import "../public/styles/bulma-cyborg-theme.css";
 import "../public/styles/main.scss";
 
 import MainLayout from "layouts/MainLayout";
