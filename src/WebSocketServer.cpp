@@ -1,13 +1,15 @@
 // WebSocketServer.cpp
 #include "WebSocketServer.h"
 
+#include "Logger.h"
+
 WebSocketServer::WebSocketServer(uint16_t port) : _webSocket("/ws") {
   initialize();
 }
 
 void WebSocketServer::begin(AsyncWebServer* server) {
   server->addHandler(&_webSocket);
-  Serial.println("[WebSocket] Server started. Waiting for connections...");
+  LOG_INFO("Server started. Waiting for connections...");
 }
 
 void WebSocketServer::initialize() {
@@ -84,20 +86,20 @@ void WebSocketServer::broadcastMessage(const String& type,
 
 void WebSocketServer::handleConnect(AsyncWebSocketClient* client, void* arg,
                                     uint8_t* data, size_t len) {
-  Serial.printf("[WebSocket] Client [%u] connected.\n", client->id());
+  LOG_DEBUG("Client [" + std::to_string(client->id()) + "] connected.\n");
   // Perform any action needed on connect, e.g., sending a welcome message
   client->text("{\"message\": \"Welcome to the WebSocket server!\"}");
 }
 
 void WebSocketServer::handleDisconnect(AsyncWebSocketClient* client, void* arg,
                                        uint8_t* data, size_t len) {
-  Serial.printf("[WebSocket] Client [%u] disconnected.\n", client->id());
+  Serial.printf("Client [%u] disconnected.\n", client->id());
   // Perform any cleanup or state update needed on disconnect
 }
 
 void WebSocketServer::handleError(AsyncWebSocketClient* client, void* arg,
                                   uint8_t* data, size_t len) {
-  Serial.printf("[WebSocket] Error on client [%u].\n", client->id());
+  Serial.printf("Error on client [%u].\n", client->id());
   // You might log the error or take action depending on the error nature
 }
 

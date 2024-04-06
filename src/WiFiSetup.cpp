@@ -1,6 +1,8 @@
 // WiFiSetup.cpp
 #include "WiFiSetup.h"
 
+#include "Logger.h"
+
 WiFiSetup::WiFiSetup(AsyncWebServer* server, DNSServer* dns)
     : _server(server), _dns(dns), _wifiManager(server, dns) {
   // Constructor now correctly initializes member pointers
@@ -15,8 +17,8 @@ void WiFiSetup::begin() {
   // _wifiManager.resetSettings();
 
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("Connected to WiFi");
+    LOG_INFO("Connected to WiFi");
   } else {
-    Serial.println("Failed to connect to WiFi");
+    LOG_ERROR("Failed to connect to WiFi");
   }
 }

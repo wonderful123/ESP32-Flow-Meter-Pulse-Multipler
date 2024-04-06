@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 
 #include "Settings.h"
+#include "logger.h"
 
 WebServerManager::WebServerManager(CalibrationManager& calibrationManager,
                                    PulseCounter& pulseCounter)
@@ -17,13 +18,15 @@ WebServerManager::WebServerManager(CalibrationManager& calibrationManager,
 
 void WebServerManager::begin() {
   if (_fsManager.mountFileSystem()) {
+    LOG_DEBUG("LittleFS mounted");
     _routeHandler.registerRoutes(_server);
+    LOG_DEBUG(" Routes registered");
   }
 
   _webSocketServer.begin(&_server);
   _server.begin();
-  Serial.println("HTTP server started at IP address: " +
-                 WiFi.localIP().toString());
+  LOG_INFO("*** HTTP server started at IP address: " +
+           std::string(WiFi.localIP().toString().c_str()) + " ***");
   startMDNS();
   _epochTimeManager.begin();
   _otaUpdater.begin();
@@ -46,10 +49,10 @@ void WebServerManager::broadcastWebsocketMessage(String& type,
 
 void WebServerManager::startMDNS() {
   if (!MDNS.begin(MDNS_DOMAIN_NAME)) {
-    Serial.println("Error setting up MDNS responder");
+    LOG_ERROR("Error setting up MDNS responder");
   }
   MDNS.addService("http", "tcp", 80);
-  Serial.println("mDNS responder started at http://pulse-scaler.local");
+  LOG_INFO("mDNS responder started at http://pulse-scaler.local");
 }
 
 EpochTimeManager& WebServerManager::getEpochTimeManager() {
