@@ -6,7 +6,7 @@ import StatusMessageService from "services/StatusMessageService";
 const CalibrationRecordsModel = {
   records: [],
   loadRecords: function () {
-    const apiUrl = "http://localhost:3000/calibration-records"; // Target API URL
+    const apiUrl = "calibration-records"; // Target API URL
     return m.request({
         method: "GET",
         url: apiUrl,
@@ -28,7 +28,7 @@ const CalibrationRecordsModel = {
 
     m.request({
       method: "DELETE",
-      url: `http://localhost:3000/calibration-records/${id}`, // Adjust URL as needed
+      url: `calibration-records/${id}`, // Adjust URL as needed
       withCredentials: true, // For sending cookies in cross-origin requests, if needed
     }).then(() => {
       // On success, update the UI and show a success message

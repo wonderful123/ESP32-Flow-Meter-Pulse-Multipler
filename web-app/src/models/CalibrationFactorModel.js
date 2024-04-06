@@ -6,7 +6,7 @@ const CalibrationFactorModel = {
   factor: null,
   errorMessage: "",
   loadCalibrationFactor: function () {
-    const apiUrl = "http://localhost:3000/calibration-factor"; // Adjust URL as needed
+    const apiUrl = "calibration-factor"; // Adjust URL as needed
     return m.request({
       method: "GET",
       url: apiUrl,

@@ -37,7 +37,7 @@ const FirmwareModel = {
     // You may need to adjust this function to properly handle OTA updates
     m.request({
       method: "POST",
-      url: "http://localhost:3000/firmware-update",
+      url: "firmware-update",
       data: {
         url: url
       }, // Ensure your server expects this format
