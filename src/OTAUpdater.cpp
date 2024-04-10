@@ -2,10 +2,13 @@
 #include "OTAUpdater.h"
 
 #include <ArduinoJson.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266httpUpdate.h>
-#include <ESPAsyncTCP.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#include <Update.h>
 
+#include "Logger.h"
 #include "Settings.h"
 
 void OTAUpdater::begin() {
@@ -21,7 +24,7 @@ void OTAUpdater::begin() {
   });
 
   ArduinoOTA.onEnd([this]() {
-    LOG_INFO(F("OTA Update completed"); 
+    LOG_INFO("OTA Update completed");
     JsonDocument doc;
     String type = "status";
     doc["message"] = "Update complete";
@@ -59,8 +62,8 @@ void OTAUpdater::begin() {
         errorMsg = "Unknown Error";
         break;
     }
-    std::string errorMessage =
-        "OTA Error[" + std::to_string(error) + "]: " + std::string(errorMsg);
+    String errorMessage =
+        "OTA Error[" + String(error) + "]: " + String(errorMsg);
     LOG_ERROR(errorMessage);
 
     JsonDocument doc;
@@ -75,6 +78,12 @@ void OTAUpdater::begin() {
 void OTAUpdater::handle() { ArduinoOTA.handle(); }
 
 void OTAUpdater::checkForUpdate() {
+  // Log the start of the update check
+  LOG_INFO("Checking for OTA updates...");
+  JsonDocument docStart;
+  docStart["message"] = "Checking for OTA updates...";
+  _webSocketServer.broadcastMessage("status", docStart);
+
   HTTPClient http;
   WiFiClient client;
   http.begin(client, OTA_FIRMWARE_VERSION_URL);
@@ -106,13 +115,13 @@ void OTAUpdater::checkForUpdate() {
     JsonDocument payloadDoc;
     DeserializationError error = deserializeJson(payloadDoc, payload);
     if (error) {
-      LOG_ERROR("Failed to parse JSON payload: " + String(error.c_str()));
+      LOG_ERROR(String("Failed to parse JSON payload: ") + error.c_str());
       broadcastError("Failed to parse JSON");
     } else {
       String newVersion = payloadDoc["version"].as<String>();
       String changes = payloadDoc["changes"].as<String>();
-      LOG_INFO("Current firmware version: " + String(FIRMWARE_VERSION));
-      LOG_INFO("Available firmware version: " + newVersion);
+      LOG_INFO("Current firmware version: " FIRMWARE_VERSION);
+      LOG_INFO(String("Available firmware version: ") + newVersion);
       if (newVersion != FIRMWARE_VERSION) {
         broadcastUpdateAvailable(newVersion, changes);
       } else {
@@ -122,8 +131,7 @@ void OTAUpdater::checkForUpdate() {
   } else {
     LOG_ERROR("Failed to check for firmware updates, HTTP code: " +
               std::to_string(httpCode));
-    broadcastError("HTTP request failed with code: " +
-                   std::to_string(httpCode));
+    broadcastError("HTTP request failed with code: " + String(httpCode));
   }
 }
 
@@ -152,17 +160,17 @@ void OTAUpdater::broadcastNoUpdate() {
 
 void OTAUpdater::performOTAUpdate() {
   WiFiClient client;
-  auto ret = ESPhttpUpdate.update(client, OTA_FIRMWARE_URL);
+  auto ret = httpUpdate.update(client, OTA_FIRMWARE_URL);
 
   String messageType;
   JsonDocument doc;
   switch (ret) {
     case HTTP_UPDATE_FAILED:
-      LOG_ERROR("HTTP_UPDATE_FAILED: " + "(" + ESPhttpUpdate.getLastError() +
-                ")" + ESPhttpUpdate.getLastErrorString());
+      LOG_ERROR("HTTP_UPDATE_FAILED Error (" +
+                String(httpUpdate.getLastError()) +
+                "): " + httpUpdate.getLastErrorString());
       messageType = "error";
-      doc["message"] =
-          "HTTP_UPDATE_FAILED: " + ESPhttpUpdate.getLastErrorString();
+      doc["message"] = "HTTP_UPDATE_FAILED: " + httpUpdate.getLastErrorString();
       break;
     case HTTP_UPDATE_NO_UPDATES:
       LOG_INFO("HTTP_UPDATE_NO_UPDATES - No updates available");

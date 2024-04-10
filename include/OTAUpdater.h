@@ -2,7 +2,6 @@
 #pragma once
 
 #include <Arduino.h>
-#include <ArduinoOTA.h>
 
 #include "WebSocketServer.h"
 
