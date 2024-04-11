@@ -7,7 +7,7 @@
 #include "PulseCounter.h"
 #include "ScaledPulseGenerator.h"
 #include "WebServerManager.h"
-#include "WiFiSetup.h"
+#include "WiFiUtils.h"
 
 class ApplicationManager {
  public:
@@ -19,8 +19,8 @@ class ApplicationManager {
   PulseCounter pulseCounter;
   CalibrationManager calibrationManager;
   AsyncWebServer server{80};  // Shared server instance if needed
-  DNSServer dns;              // DNS server for the captive portal
-  WiFiSetup wiFiSetup;
+  AsyncDNSServer dns;         // DNS server for the captive portal
+  WiFiUtils wiFiUtils;
   WebServerManager webServerManager;
   ScaledPulseGenerator scaledPulseGenerator;
 
