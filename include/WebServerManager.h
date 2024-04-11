@@ -1,7 +1,6 @@
 // WebServerManager.h
 #pragma once
 
-#include <ESP8266mDNS.h>
 #include <ESPAsyncWebServer.h>
 
 #include "CalibrationManager.h"
