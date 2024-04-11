@@ -176,4 +176,5 @@ def print_summary(stats):
 # Update files in the /lib directory
 update_files("./src")
 update_files("./include")
+update_files("./lib")
 update_files("./web-app/src")
