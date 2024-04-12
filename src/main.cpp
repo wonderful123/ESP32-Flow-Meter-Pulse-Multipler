@@ -1,11 +1,13 @@
 // main.cpp
+#include <ESPAsync_WiFiManager.h>
+
 #include "ApplicationManager.h"
 #include "Logger.h"
 
 ApplicationManager appManager;
 
 // Foward declarations
-void serialLogCallback(Logger::Level level, const std::string& message);
+void serialLogCallback(const std::string& message);
 void initializeLogger();
 
 void setup() {
@@ -19,7 +21,7 @@ void initializeLogger() {
   Serial.begin(115200);
   while (!Serial);  // Wait for Serial port to connect
 
-  Logger::setLogCallback(serialLogCallback);
+  LoggerLib::Logger::addLogOutput(serialLogCallback);
   LOG_INFO("Logger initialized and ready");
   LOG_INFO(R"(
     ____  _       _ __        __   ____        __             _____            __         
@@ -31,7 +33,7 @@ void initializeLogger() {
   )");
 }
 
-void serialLogCallback(Logger::Level level, const std::string& message) {
+void serialLogCallback(const std::string& message) {
   if (!Serial) return;
   Serial.println(message.c_str());
   Serial.flush();
