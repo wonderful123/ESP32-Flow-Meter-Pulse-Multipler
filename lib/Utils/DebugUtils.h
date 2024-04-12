@@ -17,8 +17,17 @@
 class DebugUtils {
  public:
   /**
-   * Logs memory usage statistics. The actual information logged may vary based
-   * on the platform.
+   * @brief Logs memory usage statistics.
+   *
+   * The actual information logged may vary based on the platform.
    */
   static void logMemoryUsage();
+
+  /**
+   * @brief Retrieves and logs the reason for the last reset.
+   *
+   * This function retrieves the reset reason and logs it using the Logger
+   * class. The reset reasons may differ based on the platform.
+   */
+  static void logResetReason();
 };
