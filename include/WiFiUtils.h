@@ -1,7 +1,6 @@
 // WiFiUtils.h
 #pragma once
 
-#include <DNSServer.h>
 #include <ESPAsyncDNSServer.h>
 #include <ESPAsyncWebServer.h>
 
