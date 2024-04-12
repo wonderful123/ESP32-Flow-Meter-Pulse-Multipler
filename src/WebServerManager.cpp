@@ -3,6 +3,8 @@
 
 #include <ArduinoJson.h>
 
+#include "Arduino.h"
+#include "ESPmDNS.h"
 #include "Settings.h"
 #include "logger.h"
 
@@ -26,17 +28,13 @@ void WebServerManager::begin() {
   _webSocketServer.begin(&_server);
   _server.begin();
   LOG_INFO("*** HTTP server started at IP address: " +
-           std::string(WiFi.localIP().toString().c_str()) + " ***");
+           WiFi.localIP().toString() + " ***");
   startMDNS();
   _epochTimeManager.begin();
   _otaUpdater.begin();
 }
 
-void WebServerManager::update() {
-  MDNS.update();
-  _otaUpdater.handle();
-  _epochTimeManager.update();
-}
+void WebServerManager::update() { _epochTimeManager.update(); }
 
 void WebServerManager::broadcastPulseCount(unsigned long pulseCount) {
   _webSocketServer.broadcastPulseCount(pulseCount);
