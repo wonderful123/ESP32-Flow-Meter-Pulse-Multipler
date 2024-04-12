@@ -12,10 +12,6 @@
 #define LOG(level, ...) \
   LoggerLib::Logger::instance().log(level, __FILE__, __LINE__, __VA_ARGS__)
 
-// #define LOG(level, ...)                                        \
-//   LoggerLib::Logger::instance().log(level, __FILE__, __LINE__, \
-//                                     String(__VA_ARGS__).c_str())
-
 // Specific level LOG macros
 #define LOG_DEBUG(...) LOG(LoggerLib::LogLevel::DEBUG, __VA_ARGS__)
 #define LOG_INFO(...) LOG(LoggerLib::LogLevel::INFO, __VA_ARGS__)
