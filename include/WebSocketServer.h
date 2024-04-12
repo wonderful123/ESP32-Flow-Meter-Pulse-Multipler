@@ -12,7 +12,8 @@ class WebSocketServer {
   explicit WebSocketServer(uint16_t port);
   void begin(AsyncWebServer* server);
   void broadcastPulseCount(unsigned long pulseCount);
-  void broadcastMessage(const String& type, const JsonVariant& data);
+  void broadcastJsonData(const String& type, const JsonVariant& data);
+  void broadcastMessage(const String& type, const String& message);
 
  private:
   AsyncWebSocket _webSocket;
