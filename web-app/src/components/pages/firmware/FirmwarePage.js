@@ -1,3 +1,4 @@
+// FirmwarePage.js
 import m from "mithril";
 import FirmwareUpdate from "./FirewareUpdate"; // Adjust the path if necessary
 

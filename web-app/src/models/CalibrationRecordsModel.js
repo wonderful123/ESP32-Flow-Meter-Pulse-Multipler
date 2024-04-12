@@ -1,5 +1,4 @@
 // CalibrationRecordsModel.js
-// src/models/Calibration.js
 import m from "mithril";
 import StatusMessageService from "services/StatusMessageService";
 

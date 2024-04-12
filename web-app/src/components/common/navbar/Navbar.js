@@ -1,3 +1,4 @@
+// Navbar.js
 import m from 'mithril';
 import IconGear from 'icons/IconGear';
 

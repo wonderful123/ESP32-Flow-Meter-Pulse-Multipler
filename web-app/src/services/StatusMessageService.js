@@ -1,5 +1,4 @@
 // StatusMessageService.js
-// src/services/StatusMessageService.js
 import m from "mithril";
 
 let message = "Ready to calibrate.";

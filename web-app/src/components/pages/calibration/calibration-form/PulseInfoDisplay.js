@@ -1,3 +1,4 @@
+// PulseInfoDisplay.js
 import m from "mithril";
 import WebSocketService from "services/WebSocketService";
 

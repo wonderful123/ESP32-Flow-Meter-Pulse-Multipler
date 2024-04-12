@@ -1,3 +1,4 @@
+// MainLayout.js
 import m from "mithril";
 import Navbar from "components/common/navbar/Navbar";
 

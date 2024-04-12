@@ -1,4 +1,4 @@
-// index.js
+// CalibrationForm.js
 import m from "mithril";
 import VolumeInput from "./VolumeInput";
 import CalibrationButtons from "./CalibrationButtons";

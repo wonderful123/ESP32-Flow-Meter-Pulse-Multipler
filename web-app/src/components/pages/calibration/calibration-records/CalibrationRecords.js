@@ -1,4 +1,4 @@
-// index.js
+// CalibrationRecords.js
 import m from "mithril";
 import CalibrationRecordsModel from "models/CalibrationRecordsModel";
 import CalibrationTable from "./CalibrationTable"; // Import the CalibrationTable component
