@@ -69,10 +69,9 @@ void WebSocketServer::broadcastPulseCount(unsigned long pulseCount) {
   _webSocket.textAll(message);
 }
 
-void WebSocketServer::broadcastMessage(const String& type,
-                                       const JsonVariant& data) {
+void WebSocketServer::broadcastJsonData(const String& type,
+                                        const JsonVariant& data) {
   JsonDocument doc;
-
   doc["type"] = type;
   doc["data"] = data;
 
@@ -84,9 +83,16 @@ void WebSocketServer::broadcastMessage(const String& type,
   _webSocket.textAll(message);
 }
 
+void WebSocketServer::broadcastMessage(const String& type,
+                                       const String& message) {
+  String broadcastMessage = "{\"type\":\"" + type + "\",\"data\":\"" + message + "\"}";
+  _webSocket.textAll(broadcastMessage);
+}
+
 void WebSocketServer::handleConnect(AsyncWebSocketClient* client, void* arg,
                                     uint8_t* data, size_t len) {
-  LOG_DEBUG("Client [" + std::to_string(client->id()) + "] connected.\n");
+  // LOG_DEBUG("Client [" + std::to_string(client->id()) + "] connected.\n");
+  LOG_DEBUG("Client [{}] connected.", client->id());
   // Perform any action needed on connect, e.g., sending a welcome message
   client->text("{\"message\": \"Welcome to the WebSocket server!\"}");
 }
