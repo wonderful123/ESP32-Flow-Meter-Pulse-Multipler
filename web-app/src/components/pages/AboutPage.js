@@ -1,3 +1,4 @@
+// AboutPage.js
 import m from "mithril";
 import SectionContainer from "components/common/SectionContainer";
 
