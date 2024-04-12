@@ -11,24 +11,24 @@ ApplicationManager::ApplicationManager()
     : pulseCounter(PULSE_PIN),
       calibrationManager(),
       server(80),
-      wiFiSetup(&server, &dns),
+      wiFiUtils(&server, &dns),
       webServerManager(calibrationManager, pulseCounter),
       scaledPulseGenerator(SCALED_OUTPUT_PIN, BASE_PULSE_DURATION_MICROS) {}
 
 void ApplicationManager::begin() {
+// Macro to convert the definition into a string literal
 #ifdef FIRMWARE_VERSION
   LOG_INFO("Firmware version: " FIRMWARE_VERSION);
 #endif
 
-  wiFiSetup.begin();
+  wiFiUtils.begin();
   pulseCounter.begin();
   calibrationManager.begin();
   float outputScalingFactor = calibrationManager.getCalibrationFactor();
   scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
   webServerManager.begin();
 
-  String resetReason = ESP.getResetReason();
-  LOG_DEBUG("Previous Reset Reason: " + std::string(resetReason.c_str()));
+  DebugUtils::logResetReason();
   DebugUtils::logMemoryUsage();
   LOG_INFO("===========================================");
   LOG_INFO("STARTUP COMPLETE: System is now operational");
