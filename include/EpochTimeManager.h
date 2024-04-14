@@ -6,10 +6,10 @@
 
 class EpochTimeManager {
  public:
-  EpochTimeManager();
-  void begin();
-  void update();
-  unsigned long getEpochTime();
+  EpochTimeManager() : timeClient(ntpUDP, "pool.ntp.org", 0, 60000) {}
+  void begin() { timeClient.begin(); }
+  void update() { timeClient.update(); }
+  unsigned long getEpochTime() { return timeClient.getEpochTime(); }
 
  private:
   WiFiUDP ntpUDP;
