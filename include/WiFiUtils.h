@@ -1,8 +1,11 @@
 // WiFiUtils.h
 #pragma once
 
-#include <ESPAsyncDNSServer.h>
-#include <ESPAsyncWebServer.h>
+#include <Arduino.h>
+
+// Forward declarations
+class AsyncWebServer;
+class AsyncDNSServer;
 
 #include <ESPAsync_WiFiManager.hpp>
 

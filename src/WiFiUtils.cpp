@@ -1,15 +1,14 @@
 // WiFiUtils.cpp
 #include "WiFiUtils.h"
 
+#include <ESPAsyncDNSServer.h>
+#include <ESPAsyncWebServer.h>
 #include <time.h>
 
 #include "Logger.h"
 
 WiFiUtils::WiFiUtils(AsyncWebServer* server, AsyncDNSServer* dns)
-    : _server(server), _dns(dns), _wifiManager(server, dns) {
-  // Constructor now correctly initializes member pointers
-  // and passes them to _wifiManager
-}
+    : _server(server), _dns(dns), _wifiManager(server, dns) {}
 
 void WiFiUtils::begin() {
   // Uncomment and modify to set custom AP name and password
@@ -39,20 +38,24 @@ void WiFiUtils::initializeTime() {
 
 String WiFiUtils::getCurrentTimestamp() {
   struct tm timeinfo;
+  time_t now;
+
   if (getLocalTime(&timeinfo)) {
     _lastNtpTime =
         mktime(&timeinfo);   // Update last NTP time on successful sync
     _lastMillis = millis();  // Reset millis counter
+    now = _lastNtpTime;      // Use the updated NTP time
   } else if (_lastNtpTime > 0) {
-    // Calculate the approximate current time using the last known NTP time and
-    // elapsed millis
-    time_t now = _lastNtpTime + ((millis() - _lastMillis) / 1000);
-    localtime_r(&now, &timeinfo);
+    now = _lastNtpTime + (millis() - _lastMillis) /
+                             1000;  // Approximate time since last NTP sync
   } else {
     return "00:00:00";  // Default time if NTP sync has never been successful
   }
 
-  char buffer[26];
+  localtime_r(&now,
+              &timeinfo);  // Convert the time_t to broken down time struct
+
+  char buffer[20];  // Adjusted buffer size for the format
   strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &timeinfo);
   return String(buffer);
 }
