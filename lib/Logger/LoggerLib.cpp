@@ -7,12 +7,14 @@ namespace LoggerLib {
 
 // Private constructor for singleton pattern
 Logger::Logger() {
+#if ENABLE_LOGGING
   // Default log output to Serial
   addLogOutput([](const std::string& message) {
     if (!Serial) return;
     Serial.println(message.c_str());
     Serial.flush();
   });
+#endif
 }
 
 Logger& Logger::instance() {
@@ -21,10 +23,12 @@ Logger& Logger::instance() {
 }
 
 void Logger::addLogOutput(Logger::LogOutput output) {
+#if ENABLE_LOGGING
   Logger& logger = instance();
 
   std::lock_guard<std::mutex> guard(logger._mutex);
   logger._outputs.emplace_back(std::move(output));
+#endif
 }
 
 void Logger::log(LogLevel level, const std::string& file, int line,
@@ -43,6 +47,7 @@ void Logger::log(LogLevel level, const std::string& file, int line,
 }
 
 std::string Logger::getUptimeTimestamp() const {
+#if ENABLE_LOGGING
   unsigned long millisPassed = millis();
   unsigned long hours =
       millisPassed / 3600000;  // Convert milliseconds to hours
@@ -53,10 +58,12 @@ std::string Logger::getUptimeTimestamp() const {
   sprintf(buffer, "%lu:%02lu:%02lu", hours, mins, secs);
 
   return std::string(buffer);
+#endif
 }
 
 void Logger::logInternal(LogLevel level, const std::string& file, int line,
                          const std::string& message) {
+#if ENABLE_LOGGING
   auto timestamp = getUptimeTimestamp();  // Assume this method exists and is
                                           // correctly implemented
   std::string formattedMessage =
@@ -66,6 +73,7 @@ void Logger::logInternal(LogLevel level, const std::string& file, int line,
   for (const auto& output : _outputs) {
     output(formattedMessage);
   }
+#endif
 }
 
 }  // namespace LoggerLib

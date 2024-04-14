@@ -1,10 +1,13 @@
 // LoggerLib.h
 #pragma once
 
-#include <WString.h>   // Arduino String library
-#undef B0              // Undefine conflicting macro
-#undef B1              // Undefine conflicting macro
-#include <fmt/core.h>  // Include fmt library headers after undefining the macros
+#define ENABLE_LOGGING 1
+
+#include <WString.h>  // Arduino String library
+#undef B0             // Undefine conflicting macro
+#undef B1             // Undefine conflicting macro
+#include <fmt/core.h>  // Include fmt library headers after undefining the
+// macros
 
 #include <functional>
 #include <iostream>
@@ -38,8 +41,10 @@ class Logger {
   template <typename... Args>
   void log(LogLevel level, const std::string& file, int line,
            const std::string& format, Args&&... args) {
+#if ENABLE_LOGGING
     auto formattedMessage = fmt::format(format, std::forward<Args>(args)...);
     logInternal(level, file, line, formattedMessage);
+#endif
   }
 
  private:
