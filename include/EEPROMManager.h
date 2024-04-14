@@ -1,12 +1,9 @@
 // EEPROMManager.h
 #pragma once
 
-#include <Arduino.h>  // Ensure compatibility with Arduino IDE
 #include <EEPROM.h>
 #include <stddef.h>  // for size_t
-
 #include <vector>
-
 #include "Settings.h"
 
 struct EEPROMHeader {
