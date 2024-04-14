@@ -54,8 +54,8 @@ void WebSocketServer::onEvent(AsyncWebSocket* server,
 void WebSocketServer::logEventInfo(AsyncWebSocket* server,
                                    AsyncWebSocketClient* client,
                                    AwsEventType type, size_t len) {
-  Serial.printf("ws[%s][%u] %s: %u\n", server->url(), client->id(),
-                eventTypeToString(type), len);
+  LOG_DEBUG(String("ws[") + server->url() + "][" + String(client->id()) + "] " +
+           eventTypeToString(type) + ": " + String(len));
 }
 
 const char* WebSocketServer::eventTypeToString(AwsEventType type) {
@@ -99,19 +99,19 @@ void WebSocketServer::handleConnect(AsyncWebSocketClient* client, void* arg,
 
 void WebSocketServer::handleDisconnect(AsyncWebSocketClient* client, void* arg,
                                        uint8_t* data, size_t len) {
-  Serial.printf("Client [%u] disconnected.\n", client->id());
+  LOG_INFO("Client [%u] disconnected.\n", client->id());
   // Perform any cleanup or state update needed on disconnect
 }
 
 void WebSocketServer::handleError(AsyncWebSocketClient* client, void* arg,
                                   uint8_t* data, size_t len) {
-  Serial.printf("Error on client [%u].\n", client->id());
+  LOG_ERROR("Error on client [%u].\n", client->id());
   // You might log the error or take action depending on the error nature
 }
 
 void WebSocketServer::handlePong(AsyncWebSocketClient* client, void* arg,
                                  uint8_t* data, size_t len) {
-  Serial.printf("[WebSocket] Pong received from client [%u].\n", client->id());
+  LOG_DEBUG("Pong received from client [%u].\n", client->id());
   // Pong messages are often used in heartbeat mechanisms to check connection
   // liveliness
 }
@@ -121,7 +121,7 @@ void WebSocketServer::handleData(AsyncWebSocketClient* client, void* arg,
   // Assuming the data is a text message, not binary. For binary data, you'll
   // need a different approach.
   String message = String((char*)data).substring(0, len);
-  Serial.printf("[WebSocket] Data from client [%u]: %s\n", client->id(),
+  LOG_DEBUG("[WebSocket] Data from client [%u]: %s\n", client->id(),
                 message.c_str());
 
   // Example: Echo the received message back to the client
