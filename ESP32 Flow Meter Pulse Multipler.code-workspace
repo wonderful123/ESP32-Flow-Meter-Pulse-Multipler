@@ -1,11 +1,12 @@
 {
 	"folders": [
 		{
+			"name": "ESP32 Flow Meter Pulse Multipler",
 			"path": "."
 		}
 	],
 	"settings": {
-		"liveServer.settings.multiRootWorkspaceName": "ESP8266 Flow Meter Pulse Multipler",
+		"liveServer.settings.multiRootWorkspaceName": "ESP32 Flow Meter Pulse Multipler",
 		"files.associations": {
 			"vector": "cpp",
 			"array": "cpp",
