@@ -41,6 +41,8 @@ void ApplicationManager::loop() {
 
   // Update web server manager
   webServerManager.update();
+
+  scaledPulseGenerator.loop();
 }
 
 void ApplicationManager::broadcastPulseCountAtInterval(
