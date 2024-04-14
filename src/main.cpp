@@ -1,5 +1,6 @@
 // main.cpp
-#include <ESPAsync_WiFiManager.h>
+#include <ESPAsync_WiFiManager.h>  // Declared here to avoid multiple linking errors specified in docs
+#include <HardwareSerial.h>
 
 #include "ApplicationManager.h"
 #include "Logger.h"
