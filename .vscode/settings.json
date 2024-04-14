@@ -1,3 +1,4 @@
 {
-  "idf.portWin": "COM7"
+  "idf.portWin": "COM7",
+  "C_Cpp.default.compilerPath": "C:/Users/Josh/.platformio/packages/toolchain-riscv32-esp/bin/riscv32-esp-elf-gcc.exe"
 }
