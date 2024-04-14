@@ -2,6 +2,8 @@
 #include "RouteHandler.h"
 
 #include <ArduinoJson.h>
+#include <LittleFS.h>
+#include <Logger.h>
 
 #include "Settings.h"
 #include "WebServerManager.h"
@@ -91,7 +93,7 @@ void RouteHandler::setCalibrationFactor(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::getCalibrationRecords(AsyncWebServerRequest* request) {
-  Serial.println("Fetching calibration records...");
+  LOG_INFO("Fetching calibration records...");
   String json = _calibrationManager.getCalibrationRecordsJson();
   request->send(200, "application/json", json);
 }
@@ -131,7 +133,7 @@ void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::editCalibrationRecord(AsyncWebServerRequest* request) {
-  Serial.println("Handling edit request");
+  LOG_INFO("Handling edit request");
 
   if (request->hasArg("id") && request->hasArg("targetVolume") &&
       request->hasArg("observedVolume") && request->hasArg("pulseCount")) {
@@ -143,26 +145,26 @@ void RouteHandler::editCalibrationRecord(AsyncWebServerRequest* request) {
 
     _calibrationManager.updateCalibrationRecord(id, targetVolume,
                                                 observedVolume, pulseCount);
-    Serial.println("Calibration record updated successfully");
+    LOG_INFO("Calibration record updated successfully");
     request->send(200, "text/plain",
                   "Calibration record updated successfully.");
   } else {
-    Serial.println("Missing data for update.");
+    LOG_ERROR("Missing data for update.");
     request->send(400, "text/plain", "Missing data for update.");
   }
 }
 
 void RouteHandler::deleteCalibrationRecord(AsyncWebServerRequest* request) {
-  Serial.println("Handling delete request");
+  LOG_INFO("Handling delete request");
 
   if (request->hasArg("id")) {
     int id = request->arg("id").toInt();
     _calibrationManager.deleteCalibrationRecord(id);
-    Serial.println("Calibration record deleted successfully");
+    LOG_INFO("Calibration record deleted successfully");
     request->send(200, "text/plain",
                   "Calibration record deleted successfully.");
   } else {
-    Serial.println("Missing ID for deletion.");
+    LOG_ERROR("Missing ID for deletion.");
     request->send(400, "text/plain", "Missing ID for deletion.");
   }
 }
