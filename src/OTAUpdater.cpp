@@ -2,10 +2,7 @@
 #include "OTAUpdater.h"
 
 #include <ArduinoJson.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
-#include <Update.h>
 
 #include "Logger.h"
 #include "Settings.h"
