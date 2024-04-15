@@ -64,7 +64,7 @@ module.exports = {
       },
       threshold: 10240,
       minRatio: 0.8,
-      // deleteOriginalAssets: true, // This will remove the original uncompressed files
+      deleteOriginalAssets: true, // This will remove the original uncompressed files
     }),
   ],
   module: {
@@ -107,7 +107,7 @@ module.exports = {
         defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10, // Priority for the vendors group.
-          reuseExistingChunk: true,
+          // reuseExistingChunk: true,
           name(module) {
             // Get the name of the node module being imported
             const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
