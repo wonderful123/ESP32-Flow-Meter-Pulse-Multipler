@@ -54,8 +54,8 @@ void WebSocketServer::onEvent(AsyncWebSocket* server,
 void WebSocketServer::logEventInfo(AsyncWebSocket* server,
                                    AsyncWebSocketClient* client,
                                    AwsEventType type, size_t len) {
-  LOG_DEBUG(String("ws[") + server->url() + "][" + String(client->id()) + "] " +
-           eventTypeToString(type) + ": " + String(len));
+  LOG_DEBUG("ws[%s][%u] %s: %u", server->url(), client->id(),
+            eventTypeToString(type), len);
 }
 
 const char* WebSocketServer::eventTypeToString(AwsEventType type) {
@@ -65,8 +65,7 @@ const char* WebSocketServer::eventTypeToString(AwsEventType type) {
 }
 
 void WebSocketServer::broadcastPulseCount(unsigned long pulseCount) {
-  String message = "{\"pulseCount\":" + String(pulseCount) + "}";
-  _webSocket.textAll(message);
+  _webSocket.printfAll("{\"pulseCount\": %lu}", pulseCount);
 }
 
 void WebSocketServer::broadcastJsonData(const String& type,
@@ -85,14 +84,19 @@ void WebSocketServer::broadcastJsonData(const String& type,
 
 void WebSocketServer::broadcastMessage(const String& type,
                                        const String& message) {
-  String broadcastMessage = "{\"type\":\"" + type + "\",\"data\":\"" + message + "\"}";
-  _webSocket.textAll(broadcastMessage);
+  JsonDocument doc;
+  doc["type"] = type;
+  doc["data"] = message;
+
+  String output;
+  serializeJson(doc, output);  // Serialize the JSON document to a String
+
+  _webSocket.textAll(output);  // Broadcast the serialized JSON to all clients
 }
 
 void WebSocketServer::handleConnect(AsyncWebSocketClient* client, void* arg,
                                     uint8_t* data, size_t len) {
-  // LOG_DEBUG("Client [" + std::to_string(client->id()) + "] connected.\n");
-  LOG_DEBUG("Client [{}] connected.", client->id());
+  LOG_DEBUG("Client [%u] connected.", client->id());
   // Perform any action needed on connect, e.g., sending a welcome message
   client->text("{\"message\": \"Welcome to the WebSocket server!\"}");
 }
@@ -122,7 +126,7 @@ void WebSocketServer::handleData(AsyncWebSocketClient* client, void* arg,
   // need a different approach.
   String message = String((char*)data).substring(0, len);
   LOG_DEBUG("[WebSocket] Data from client [%u]: %s\n", client->id(),
-                message.c_str());
+            message.c_str());
 
   // Example: Echo the received message back to the client
   client->text(message);

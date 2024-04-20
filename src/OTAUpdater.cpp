@@ -121,7 +121,7 @@ void OTAUpdater::broadcastUpdateAvailable(const String& newVersion,
                                           const String& changes) {
   LOG_INFO("New firmware version available");
   LOG_INFO("Current version: " FIRMWARE_VERSION);
-  LOG_INFO("Available version: " + newVersion);
+  LOG_INFO("Available version: ", newVersion);
   LOG_INFO("Changes: ", changes);
 
   JsonDocument responseDoc;

@@ -27,8 +27,8 @@ void WebServerManager::begin() {
 
   _webSocketServer.begin(&_server);
   _server.begin();
-  LOG_INFO("*** HTTP server started at IP address: " +
-           WiFi.localIP().toString() + " ***");
+  LOG_INFO("HTTP server started at IP address: %s ***",
+           WiFi.localIP().toString());
   startMDNS();
   _epochTimeManager.begin();
   _otaUpdater.begin();
