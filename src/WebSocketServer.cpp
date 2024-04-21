@@ -7,12 +7,12 @@ WebSocketServer::WebSocketServer(uint16_t port) : _webSocket("/ws") {
   initialize();
 }
 
-void WebSocketServer::begin(AsyncWebServer* server) {
+void WebSocketManager::begin(AsyncWebServer* server) {
   server->addHandler(&_webSocket);
-  LOG_INFO("Server started. Waiting for connections...");
+  LOG_INFO("Server started. Ready for connections");
 }
 
-void WebSocketServer::initialize() {
+void WebSocketManager::initialize() {
   eventHandlers[WS_EVT_CONNECT] = [this](AsyncWebSocketClient* client,
                                          void* arg, uint8_t* data, size_t len) {
     this->handleConnect(client, arg, data, len);
@@ -40,7 +40,7 @@ void WebSocketServer::initialize() {
   });
 }
 
-void WebSocketServer::onEvent(AsyncWebSocket* server,
+void WebSocketManager::onEvent(AsyncWebSocket* server,
                               AsyncWebSocketClient* client, AwsEventType type,
                               void* arg, uint8_t* data, size_t len) {
   logEventInfo(server, client, type, len);
@@ -51,21 +51,23 @@ void WebSocketServer::onEvent(AsyncWebSocket* server,
   }
 }
 
-void WebSocketServer::logEventInfo(AsyncWebSocket* server,
+void WebSocketManager::logEventInfo(AsyncWebSocket* server,
                                    AsyncWebSocketClient* client,
                                    AwsEventType type, size_t len) {
-  LOG_DEBUG("ws[%s][%u] %s: %u", server->url(), client->id(),
+  LOG_DEBUG("ws[{}][{}] {}: {}", server->url(), client->id(),
             eventTypeToString(type), len);
 }
 
-const char* WebSocketServer::eventTypeToString(AwsEventType type) {
+const char* WebSocketManager::eventTypeToString(AwsEventType type) {
   static const char* strings[] = {"CONNECT", "DISCONNECT", "ERROR", "PONG",
                                   "DATA"};
   return strings[type < 5 ? type : 4];  // Return "DATA" for unknown types
 }
 
 void WebSocketServer::broadcastPulseCount(unsigned long pulseCount) {
-  _webSocket.printfAll("{\"pulseCount\": %lu}", pulseCount);
+  if (_webSocket.count() > 0) {
+      _webSocket.printfAll("{\"pulseCount\": %lu}", pulseCount);
+  }
 }
 
 void WebSocketServer::broadcastJsonData(const String& type,
@@ -96,26 +98,26 @@ void WebSocketServer::broadcastMessage(const String& type,
 
 void WebSocketServer::handleConnect(AsyncWebSocketClient* client, void* arg,
                                     uint8_t* data, size_t len) {
-  LOG_DEBUG("Client [%u] connected.", client->id());
+  LOG_DEBUG("Client [{}] connected", client->id());
   // Perform any action needed on connect, e.g., sending a welcome message
   client->text("{\"message\": \"Welcome to the WebSocket server!\"}");
 }
 
 void WebSocketServer::handleDisconnect(AsyncWebSocketClient* client, void* arg,
                                        uint8_t* data, size_t len) {
-  LOG_INFO("Client [%u] disconnected.\n", client->id());
+  LOG_INFO("Client [{}] disconnected", client->id());
   // Perform any cleanup or state update needed on disconnect
 }
 
 void WebSocketServer::handleError(AsyncWebSocketClient* client, void* arg,
                                   uint8_t* data, size_t len) {
-  LOG_ERROR("Error on client [%u].\n", client->id());
+  LOG_ERROR("Error on client [{}]", client->id());
   // You might log the error or take action depending on the error nature
 }
 
 void WebSocketServer::handlePong(AsyncWebSocketClient* client, void* arg,
                                  uint8_t* data, size_t len) {
-  LOG_DEBUG("Pong received from client [%u].\n", client->id());
+  LOG_DEBUG("Pong received from client [{}]", client->id());
   // Pong messages are often used in heartbeat mechanisms to check connection
   // liveliness
 }
@@ -125,7 +127,7 @@ void WebSocketServer::handleData(AsyncWebSocketClient* client, void* arg,
   // Assuming the data is a text message, not binary. For binary data, you'll
   // need a different approach.
   String message = String((char*)data).substring(0, len);
-  LOG_DEBUG("[WebSocket] Data from client [%u]: %s\n", client->id(),
+  LOG_DEBUG("[WebSocket] Data from client [{}]: {}", client->id(),
             message.c_str());
 
   // Example: Echo the received message back to the client
