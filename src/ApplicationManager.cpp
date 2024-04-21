@@ -8,19 +8,15 @@
 #include "Settings.h"
 
 ApplicationManager::ApplicationManager()
-    : pulseCounter(PULSE_PIN),
+    : server(80),
+      dns(),
+      wiFiUtils(server, dns),
+      pulseCounter(PULSE_PIN),
       calibrationManager(),
-      server(80),
-      wiFiUtils(&server, &dns),
       webServerManager(calibrationManager, pulseCounter),
       scaledPulseGenerator(SCALED_OUTPUT_PIN, BASE_PULSE_DURATION_MICROS) {}
 
 void ApplicationManager::begin() {
-// Macro to convert the definition into a string literal
-#ifdef FIRMWARE_VERSION
-  LOG_INFO("Firmware version: " FIRMWARE_VERSION);
-#endif
-
   wiFiUtils.begin();
   pulseCounter.begin();
   calibrationManager.begin();
@@ -32,6 +28,9 @@ void ApplicationManager::begin() {
   DebugUtils::logMemoryUsage();
   LOG_INFO("===========================================");
   LOG_INFO("STARTUP COMPLETE: System is now operational");
+#ifdef FIRMWARE_VERSION
+  LOG_INFO("Firmware version: " FIRMWARE_VERSION);
+#endif
   LOG_INFO("===========================================");
 }
 
