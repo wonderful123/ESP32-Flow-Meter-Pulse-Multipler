@@ -23,7 +23,6 @@ void initializeLogger() {
   while (!Serial);  // Wait for Serial port to connect
 
   LoggerLib::Logger::addLogOutput(serialLogCallback);
-  LOG_INFO("Logger initialized and ready");
   LOG_INFO(R"(
     ____  _       _ __        __   ____        __             _____            __         
    / __ \(_)___ _(_) /_____ _/ /  / __ \__  __/ /_______     / ___/_________ _/ /__  _____
@@ -32,6 +31,7 @@ void initializeLogger() {
 /_____/_/\__, /_/\__/\__,_/_/  /_/    \__,_/_/____/\___/   /____/\___/\__,_/_/\___/_/     
         /____/                                                                            
   )");
+  LOG_INFO("Logger initialized and ready");
 }
 
 void serialLogCallback(const std::string& message) {
