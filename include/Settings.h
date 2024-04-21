@@ -2,7 +2,7 @@
 #pragma once
 
 #define PULSE_PIN 3
-#define PULSE_BROADCAST_INTERVAL 50  // For websocket updates
+#define PULSE_BROADCAST_INTERVAL 250  // For websocket updates
 #define SCALED_OUTPUT_PIN 7
 
 #define BASE_PULSE_DURATION_MICROS \
