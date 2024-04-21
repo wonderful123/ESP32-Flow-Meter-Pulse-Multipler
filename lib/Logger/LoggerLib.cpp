@@ -1,4 +1,6 @@
 // LoggerLib.cpp
+#include "LoggerLib.h"
+
 #include <Arduino.h>
 
 #include "Logger.h"
@@ -9,11 +11,11 @@ namespace LoggerLib {
 Logger::Logger() {
 #if ENABLE_LOGGING
   // Default log output to Serial
-  addLogOutput([](const std::string& message) {
-    if (!Serial) return;
-    Serial.println(message.c_str());
-    Serial.flush();
-  });
+  // addLogOutput([](const std::string& message) {
+  //   if (!Serial) return;
+  //   Serial.println(message.c_str());
+  //   Serial.flush();
+  // });
 #endif
 }
 
@@ -64,16 +66,66 @@ std::string Logger::getUptimeTimestamp() const {
 void Logger::logInternal(LogLevel level, const std::string& file, int line,
                          const std::string& message) {
 #if ENABLE_LOGGING
-  auto timestamp = getUptimeTimestamp();  // Assume this method exists and is
-                                          // correctly implemented
+  auto timestamp = getUptimeTimestamp();
+  std::string color;
+
+  switch (level) {
+    case LogLevel::ERROR:
+      color = RED;
+      break;
+    case LogLevel::WARN:
+      color = YELLOW;
+      break;
+    case LogLevel::INFO:
+      color = GREEN;
+      break;
+    case LogLevel::DEBUG:
+      color = CYAN;
+      break;
+    case LogLevel::VERBOSE:
+      color = MAGENTA;
+      break;
+    default:
+      color = WHITE;
+  }
+
   std::string formattedMessage =
-      fmt::format("[{}] {}:{} - {}", timestamp, file, line, message);
+      fmt::format("[{}] {}[{}][{}]{} {}", timestamp, color,
+                  levelToString(level), extractFileName(file), RESET, message);
 
   std::lock_guard<std::mutex> guard(_mutex);
   for (const auto& output : _outputs) {
     output(formattedMessage);
   }
 #endif
+}
+
+// Method to extract the filename from the full path, without the extension
+std::string Logger::extractFileName(const std::string& filePath) {
+  size_t lastSlash = filePath.find_last_of("\\/");
+  std::string filename = (lastSlash == std::string::npos)
+                             ? filePath
+                             : filePath.substr(lastSlash + 1);
+  size_t extension = filename.find_last_of('.');
+  return (extension == std::string::npos) ? filename
+                                          : filename.substr(0, extension);
+}
+
+std::string Logger::levelToString(LogLevel level) {
+  switch (level) {
+    case LogLevel::ERROR:
+      return "ERROR";
+    case LogLevel::WARN:
+      return "WARN";
+    case LogLevel::INFO:
+      return "INFO";
+    case LogLevel::DEBUG:
+      return "DEBUG";
+    case LogLevel::VERBOSE:
+      return "VERBOSE";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 }  // namespace LoggerLib

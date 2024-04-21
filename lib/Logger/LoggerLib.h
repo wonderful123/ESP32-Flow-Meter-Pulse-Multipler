@@ -59,6 +59,11 @@ class Logger {
   // Internal logging function
   void logInternal(LogLevel level, const std::string& file, int line,
                    const std::string& message);
+
+  // Method to extract the filename from the full path, without the extension
+  std::string extractFileName(const std::string& filePath);
+
+  std::string levelToString(LogLevel level);
 };
 
 }  // namespace LoggerLib
