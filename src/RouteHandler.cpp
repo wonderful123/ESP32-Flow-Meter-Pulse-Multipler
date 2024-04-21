@@ -69,8 +69,20 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
     this->handleNotFound(request);
   });
 
+  // Register route for JavaScript files, dynamically handling with or without
+  // gzip
+  server.on("^\\/.*\\.js$", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    handleJavaScriptRequest(request);
+  });
+
+  server.on("^\\/.*\\.css$", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    handleCSSRequest(request);
+  });
+
   // Serve static files from LittleFS
   server.serveStatic("/", LittleFS, "www/").setDefaultFile("index.html");
+
+  LOG_DEBUG("Routes registered");
 }
 
 void RouteHandler::getCalibrationFactor(AsyncWebServerRequest* request) {
@@ -206,4 +218,28 @@ void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
 
 void RouteHandler::handleNotFound(AsyncWebServerRequest* request) {
   request->send(404, "text/html", "<h1>404: Not Found</h1>");
+}
+
+void RouteHandler::handleJavaScriptRequest(AsyncWebServerRequest* request) {
+  String path = request->url();
+  String gzipPath = path + ".gz";
+
+  if (LittleFS.exists(gzipPath)) {  // Check if the gzip version exists
+    request->send(LittleFS, gzipPath, "application/javascript", false, nullptr);
+  } else {
+    request->send(LittleFS, path,
+                  "application/javascript");  // Fallback to normal JS file
+  }
+}
+
+void RouteHandler::handleCSSRequest(AsyncWebServerRequest* request) {
+  String path = request->url();
+  String gzipPath = path + ".gz";
+
+  if (LittleFS.exists(gzipPath)) {  // Check if the gzip version exists
+    request->send(LittleFS, gzipPath, "application/W", false, nullptr);
+  } else {
+    request->send(LittleFS, path,
+                  "application/javascript");  // Fallback to normal JS file
+  }
 }

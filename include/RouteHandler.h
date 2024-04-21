@@ -36,4 +36,6 @@ class RouteHandler {
   void getFirmwareVersion(AsyncWebServerRequest* request);
   void handleOTAUpdate(AsyncWebServerRequest* request);
   void handleNotFound(AsyncWebServerRequest* request);
+  void handleJavaScriptRequest(AsyncWebServerRequest* request);
+  void handleCSSRequest(AsyncWebServerRequest * request);
 };
