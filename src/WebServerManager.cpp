@@ -20,14 +20,12 @@ WebServerManager::WebServerManager(CalibrationManager& calibrationManager,
 
 void WebServerManager::begin() {
   if (_fsManager.mountFileSystem()) {
-    LOG_DEBUG("LittleFS mounted");
     _routeHandler.registerRoutes(_server);
-    LOG_DEBUG(" Routes registered");
   }
 
   _webSocketServer.begin(&_server);
   _server.begin();
-  LOG_INFO("HTTP server started at IP address: %s ***",
+  LOG_INFO("HTTP server started at IP address: {} ***",
            WiFi.localIP().toString());
   startMDNS();
   _epochTimeManager.begin();
@@ -50,7 +48,10 @@ void WebServerManager::startMDNS() {
     LOG_ERROR("Error setting up MDNS responder");
   }
   MDNS.addService("http", "tcp", 80);
-  LOG_INFO("mDNS responder started at http://pulse-scaler.local");
+  LOG_INFO("=================================");
+  LOG_INFO("mDNS responder started at:");
+  LOG_INFO("http://{}.local", MDNS_DOMAIN_NAME);
+  LOG_INFO("=================================");
 }
 
 EpochTimeManager& WebServerManager::getEpochTimeManager() {
