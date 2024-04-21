@@ -1,7 +1,7 @@
 // Settings.h
 #pragma once
 
-#include <sys/cdefs.h> // For size_t
+#include <sys/cdefs.h>  // For size_t
 
 // Default logger settings
 
@@ -41,3 +41,16 @@ constexpr char LOG_FORMAT[] = "[{level}] [{file}] {message}";
 constexpr bool LOGGER_ENABLE_TIMESTAMPS = true;
 constexpr char LOGGER_TIMESTAMP_FORMAT[] =
     "%Y-%m-%d %H:%M:%S";  // Example: 2024-01-01 12:00:00
+
+namespace LoggerLib {
+
+constexpr const char* RESET = "\033[0m";
+constexpr const char* RED = "\033[31m";
+constexpr const char* GREEN = "\033[32m";
+constexpr const char* YELLOW = "\033[33m";
+constexpr const char* BLUE = "\033[34m";
+constexpr const char* MAGENTA = "\033[35m";
+constexpr const char* CYAN = "\033[36m";
+constexpr const char* WHITE = "\033[37m";
+
+}  // namespace LoggerLib
