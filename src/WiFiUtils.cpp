@@ -8,13 +8,16 @@
 #include "Logger.h"
 
 WiFiUtils::WiFiUtils(AsyncWebServer& server, AsyncDNSServer& dns)
-    : _server(server), _dns(dns), _wifiManager(nullptr) {}
+    : _server(server), _dns(dns), _asyncWiFiManager(nullptr) {}
 
 void WiFiUtils::begin() {
-  _wifiManager = new ESPAsync_WiFiManager(&_server, &_dns);
+  _asyncWiFiManager = new ESPAsync_WiFiManager(&_server, &_dns);
+  if (!_asyncWiFiManager) {
+    LOG_ERROR("Failed to create WiFiManager");
+  }
   // Uncomment and modify to set custom AP name and password
   // _wifiManager.autoConnect("AP-NAME", "AP-PASSWORD");
-  _wifiManager->autoConnect("pulse-scaler");
+  _asyncWiFiManager->autoConnect("pulse-scaler");
   // Optionally, reset settings if needed (e.g., for testing)
   // _wifiManager.resetSettings();
 
