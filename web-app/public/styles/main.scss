@@ -1,7 +1,10 @@
 @use "cyborg-theme/variables";
 
+@use "bulma/sass";
 @use "bulma/sass/utilities";
 @use "bulma/sass/base";
+@use "bulma/sass/themes";
+@use "bulma/sass/components/navbar";
 @use "bulma/sass/elements/button";
 @use "bulma/sass/elements/icon";
 @use "bulma/sass/elements/content";
@@ -9,12 +12,16 @@
 @use "bulma/sass/elements/progress";
 
 // Components
-@use "navbar";
+@use "appNavbar";
 @use "calibrationPage";
+@use "components/tooltip.scss";
+@use "components/spinner.scss";
+
 
 main {
   display: flex;
   justify-content: center;
+  background-color: black;
 }
 
 p {
