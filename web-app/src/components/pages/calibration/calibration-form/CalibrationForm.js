@@ -2,107 +2,178 @@
 import m from "mithril";
 import VolumeInput from "./VolumeInput";
 import CalibrationButtons from "./CalibrationButtons";
-import PulseInfoDisplay from "./PulseInfoDisplay";
+import PulseMetrics from "./PulseMetrics";
+import CalibrationService from "services/CalibrationService";
+import PulseCountService from "services/PulseCountService";
+import {
+  calculatePulsesPerLiter,
+  calculateCalibrationFactor
+} from './CalibrationUtils';
 
 const CalibrationForm = {
   formState: {
     targetVolume: '',
     observedVolume: '',
-    pulseCount: '0',
-    pulsesPerLiter: '0.00',
-    calibrationFactor: 'N/A',
+    pulseCount: 0,
+    pulsesPerLiter: 0,
+    calibrationFactor: null,
     isCalibrationStarted: false,
     canSaveCalibration: false,
   },
 
-  clearForm: function () {
-    this.formState.targetVolume = '';
-    this.formState.observedVolume = '';
-    this.formState.pulseCount = '0';
-    this.formState.pulsesPerLiter = '0.00';
-    this.formState.calibrationFactor = 'N/A';
-    this.formState.isCalibrationStarted = false;
-    this.formState.canSaveCalibration = false;
+  oninit() {
+    PulseCountService.pulseCount.map(this.updatePulseCount.bind(this));
   },
 
-  calculateMetrics: function () {
-    const targetVolume = parseFloat(this.formState.targetVolume);
-    const observedVolume = parseFloat(this.formState.observedVolume);
-    const pulseCount = parseInt(this.formState.pulseCount, 10);
+  updatePulseCount(pulseCount) {
+    this.formState.pulseCount = pulseCount;
+    this.calculateMetrics();
+  },
 
-    if (!isNaN(observedVolume) && observedVolume > 0) {
-      const pulsesPerLitre = pulseCount / observedVolume;
-      this.formState.pulsesPerLitre = pulsesPerLitre.toFixed(2);
+  calculateMetrics() {
+    const {
+      targetVolume,
+      observedVolume,
+      pulseCount
+    } = this.formState;
+    const parsedTargetVolume = parseFloat(targetVolume);
+    const parsedObservedVolume = parseFloat(observedVolume);
 
-      if (!isNaN(targetVolume) && targetVolume > 0) {
-        const scalingFactor = (targetVolume / observedVolume) * 100;
-        this.formState.calibrationFactor = `${scalingFactor.toFixed(2)}%`;
-      } else {
-        this.formState.calibrationFactor = 'N/A';
-      }
-    } else {
-      this.formState.pulsesPerLiter = 'N/A';
+    if (isNaN(parsedTargetVolume) || isNaN(parsedObservedVolume) || parsedObservedVolume === 0) {
+      this.formState.pulsesPerLiter = 0;
       this.formState.calibrationFactor = 'N/A';
+    } else {
+      this.formState.pulsesPerLiter = calculatePulsesPerLiter(pulseCount, parsedObservedVolume);
+      this.formState.calibrationFactor = calculateCalibrationFactor(parsedTargetVolume, parsedObservedVolume);
     }
   },
 
-  view: function () {
+  clearForm() {
+    Object.assign(this.formState, {
+      targetVolume: '',
+      observedVolume: '',
+      pulseCount: 0,
+      pulsesPerLiter: 0,
+      calibrationFactor: null,
+      isCalibrationStarted: false,
+      canSaveCalibration: false,
+    });
+
+    CalibrationService.resetCounter();
+  },
+
+  validateTargetVolume() {
+    const targetVolume = parseFloat(this.formState.targetVolume);
+    return !isNaN(targetVolume) && targetVolume > 0;
+  },
+
+  saveCalibration() {
+    const {
+      targetVolume,
+      observedVolume,
+      pulseCount
+    } = this.formState;
+    const record = {
+      targetVolume: parseFloat(targetVolume),
+      observedVolume: parseFloat(observedVolume),
+      pulseCount: parseInt(pulseCount, 10)
+    };
+
+    CalibrationRecordsModel.saveRecord(record).then(this.clearForm.bind(this));
+  },
+
+  view() {
+    const {
+      targetVolume,
+      observedVolume,
+      pulseCount,
+      pulsesPerLiter,
+      calibrationFactor,
+      isCalibrationStarted,
+      canSaveCalibration,
+    } = this.formState;
+
     return m("div.box#calibration-form", [
-      m("h2.title", "Calibration Process:"),
-      // Pass in form state and methods as attributes to child components
-      m(VolumeInput, {
-        id: "target-volume",
-        label: "Step 1: Enter Target Volume (Liters)",
-        name: "targetVolume",
-        placeholder: "Enter target volume in liters",
-        value: this.formState.targetVolume,
-        onInput: (value) => this.formState.targetVolume = value // Assuming VolumeInput handles this
-      }),
-      m(CalibrationButtons, {
-        onStart: () => this.formState.isCalibrationStarted = true,
-        onStop: () => this.formState.isCalibrationStarted = false,
-        startDisabled: !this.formState.isCalibrationStarted,
-        stopDisabled: this.formState.isCalibrationStarted,
-      }),
-      m(VolumeInput, {
-        id: "observed-volume",
-        label: "Step 3: Enter Observed Volume (Liters)",
-        name: "observedVolume",
-        placeholder: "Enter observed volume in liters",
-        value: this.formState.observedVolume,
-        oninput: (e) => {
-          this.formState.observedVolume = e.target.value;
-          this.calculateMetrics();
-        },
-      }),
-      m(PulseInfoDisplay, {
-        label: "Pulse Count",
-        value: this.formState.pulseCount
-      }),
-      m(PulseInfoDisplay, {
-        label: "Pulses/Liter",
-        value: this.formState.pulsesPerLiter
-      }),
-      m(PulseInfoDisplay, {
-        label: "Output Calibration Factor (%)",
-        value: this.formState.calibrationFactor
-      }),
-      m("div.buttons", [
-        m("button.button.is-success.is-fullwidth", {
-          id: "submit-calibration",
-          disabled: !this.formState.canSaveCalibration,
-          onclick: () => {
-            /* handle save */
-          }
-        }, "Save Calibration"),
-        m("button.button.is-link.is-fullwidth", {
-          onclick: () => {
-            onclick: () => this.clearForm()
-          }
-        }, "Clear Form"),
-      ])
+      this.renderTitle(),
+      this.renderTargetVolumeInput(),
+      this.renderCalibrationButtons(),
+      this.renderObservedVolumeInput(),
+      this.renderPulseMetrics(),
+      this.renderButtons(),
     ]);
-  }
+  },
+
+  renderTitle() {
+    return m("h2.title", "Calibration Process:");
+  },
+
+  renderTargetVolumeInput() {
+    return m(VolumeInput, {
+      id: "target-volume",
+      label: "Step 1: Enter Target Volume",
+      units: "Liters",
+      tooltip: "Enter the desired target volume for calibration.",
+      name: "targetVolume",
+      placeholder: "Enter target volume",
+      value: this.formState.targetVolume,
+      oninput: (e) => {
+        this.formState.targetVolume = e.target.value;
+        this.calculateMetrics();
+      }
+    });
+  },
+
+  renderCalibrationButtons() {
+    return m(CalibrationButtons, {
+      onStart: () => {
+        this.formState.isCalibrationStarted = true;
+        this.formState.pulseCount = 0;
+        CalibrationService.startCounter();
+      },
+      onStop: () => {
+        this.formState.isCalibrationStarted = false;
+        this.formState.canSaveCalibration = true;
+        CalibrationService.stopCounter();
+      },
+      startDisabled: !this.validateTargetVolume(),
+      stopDisabled: !this.formState.isCalibrationStarted,
+    });
+  },
+
+  renderObservedVolumeInput() {
+    return m(VolumeInput, {
+      id: "observed-volume",
+      label: "Step 3: Enter Observed Volume (Liters)",
+      name: "observedVolume",
+      placeholder: "Enter observed volume in liters",
+      value: this.formState.observedVolume,
+      oninput: (e) => {
+        this.formState.observedVolume = e.target.value;
+        this.calculateMetrics();
+      },
+    });
+  },
+
+  renderPulseMetrics() {
+    return m(PulseMetrics, {
+      pulseCount: this.formState.pulseCount,
+      pulsesPerLiter: this.formState.pulsesPerLiter,
+      calibrationFactor: this.formState.calibrationFactor !== null ? this.formState.calibrationFactor : 'N/A',
+    });
+  },
+
+  renderButtons() {
+    return m("div.buttons", [
+      m("button.button.is-success.is-fullwidth", {
+        id: "submit-calibration",
+        disabled: !this.formState.canSaveCalibration,
+        onclick: this.saveCalibration.bind(this)
+      }, "Save Calibration"),
+      m("button.button.is-link.is-fullwidth", {
+        onclick: this.clearForm.bind(this)
+      }, "Reset Counter/Form"),
+    ]);
+  },
 };
 
 export default CalibrationForm;
