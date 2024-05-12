@@ -18,8 +18,8 @@ class OTAUpdater {
   void checkForUpdate();
 
  private:
-  WebSocketServer& _webSocketServer;
   esp32FOTA _esp32FOTA;
+  WebSocketServer& _webSocketServer;
 
   void logAndBroadcast(const String& type, const String& message);
   void broadcastUpdateAvailable(const String& newVersion,
