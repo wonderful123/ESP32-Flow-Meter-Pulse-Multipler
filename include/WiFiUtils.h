@@ -3,9 +3,8 @@
 
 #include <Arduino.h>
 
-// Forward declarations
-class AsyncWebServer;
-class AsyncDNSServer;
+#include <ESPAsyncDNSServer.h>
+#include <ESPAsyncWebServer.h>
 
 #include <ESPAsync_WiFiManager.hpp>
 
