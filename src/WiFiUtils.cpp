@@ -1,25 +1,24 @@
 // WiFiUtils.cpp
 #include "WiFiUtils.h"
 
-#include <ESPAsyncDNSServer.h>
-#include <ESPAsyncWebServer.h>
 #include <time.h>
 
 #include "Logger.h"
 
 WiFiUtils::WiFiUtils(AsyncWebServer& server, AsyncDNSServer& dns)
-    : _server(server), _dns(dns), _asyncWiFiManager(nullptr) {}
+    : _server(server), _dns(dns), _wifiManager(nullptr) {}
 
 void WiFiUtils::begin() {
-  _asyncWiFiManager = new ESPAsync_WiFiManager(&_server, &_dns);
-  if (!_asyncWiFiManager) {
+  _wifiManager = new ESPAsync_WiFiManager(&_server, &_dns);
+  if (!_wifiManager) {
     LOG_ERROR("Failed to create WiFiManager");
   }
   // Uncomment and modify to set custom AP name and password
-  // _wifiManager.autoConnect("AP-NAME", "AP-PASSWORD");
-  _asyncWiFiManager->autoConnect("pulse-scaler");
+  // _wifiManager->autoConnect("AP-NAME", "AP-PASSWORD");
+  _wifiManager->setConfigPortalTimeout(180);
+  _wifiManager->autoConnect("pulse-scaler");
   // Optionally, reset settings if needed (e.g., for testing)
-  // _wifiManager.resetSettings();
+  // _wifiManager->resetSettings();
 
   if (WiFi.status() == WL_CONNECTED) {
     LOG_INFO("Connected to WiFi");
