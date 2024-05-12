@@ -17,50 +17,54 @@ RouteHandler::RouteHandler(CalibrationManager& calibrationManager,
       _webServerManager(webServerManager) {}
 
 void RouteHandler::registerRoutes(AsyncWebServer& server) {
-  server.on("/calibration-factor", HTTP_GET,
+  server.on("/api/calibration-factor", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->getCalibrationFactor(request);
             });
-  server.on("/calibration-factor", HTTP_POST,
+  server.on("/api/calibration-factor", HTTP_POST,
             [this](AsyncWebServerRequest* request) {
               this->setCalibrationFactor(request);
             });
 
-  server.on("/calibration-records", HTTP_GET,
+  server.on("/api/calibration-records", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->getCalibrationRecords(request);
             });
-  server.on("/calibration-records", HTTP_POST,
+  server.on("/api/calibration-records", HTTP_POST,
             [this](AsyncWebServerRequest* request) {
               this->addCalibrationRecord(request);
             });
-  server.on("^/calibration-records/(\\d+)$", HTTP_GET,
+  server.on("^/api/calibration-records/(\\d+)$", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->getCalibrationRecord(request);
             });
-  server.on("^/calibration-records/(\\d+)$", HTTP_PUT,
+  server.on("^/api/calibration-records/(\\d+)$", HTTP_PUT,
             [this](AsyncWebServerRequest* request) {
               this->editCalibrationRecord(request);
             });
-  server.on("^/calibration-records/(\\d+)$", HTTP_DELETE,
+  server.on("^/api/calibration-records/(\\d+)$", HTTP_DELETE,
             [this](AsyncWebServerRequest* request) {
               this->deleteCalibrationRecord(request);
             });
 
-  server.on("/start-calibration", HTTP_GET,
+  server.on("/api/calibration/start", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->startCalibration(request);
             });
-  server.on("/stop-calibration", HTTP_GET,
+  server.on("/api/calibration/stop", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->stopCalibration(request);
             });
+  server.on("/api/calibration/reset", HTTP_GET,
+            [this](AsyncWebServerRequest* request) {
+              this->resetCalibration(request);
+            });
 
-  server.on("/firmware-version", HTTP_GET,
+  server.on("/api/firmware-version", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->getFirmwareVersion(request);
             });
-  server.on("/firmware-update", HTTP_POST,
+  server.on("/api/firmware-update", HTTP_POST,
             [this](AsyncWebServerRequest* request) {
               this->handleOTAUpdate(request);
             });
@@ -69,20 +73,15 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
     this->handleNotFound(request);
   });
 
-  // Register route for JavaScript files, dynamically handling with or without
-  // gzip
-  server.on("^\\/.*\\.js$", HTTP_GET, [this](AsyncWebServerRequest* request) {
-    handleJavaScriptRequest(request);
-  });
-
-  server.on("^\\/.*\\.css$", HTTP_GET, [this](AsyncWebServerRequest* request) {
-    handleCSSRequest(request);
-  });
-
   // Serve static files from LittleFS
-  server.serveStatic("/", LittleFS, "www/").setDefaultFile("index.html");
+   server.serveStatic("/", LittleFS, "/www/")
+      .setDefaultFile("index.html")
+      .setCacheControl("max-age=3600")
+      .setFilter([](AsyncWebServerRequest* request) {
+        return !request->url().endsWith(".gz");  // Ignore direct .gz requests
+      });
 
-  LOG_DEBUG("Routes registered");
+  LOG_INFO("Routes registered");
 }
 
 void RouteHandler::getCalibrationFactor(AsyncWebServerRequest* request) {
@@ -198,6 +197,12 @@ void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
   request->send(200, "application/json", jsonResponse);
 }
 
+void RouteHandler::resetCalibration(AsyncWebServerRequest* request) {
+  _pulseCounter.resetPulseCount();  // Reset the pulse count to 0
+
+  request->send(200, "text/plain", "Calibration counter reset.");
+}
+
 void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
   // Directly call checkForUpdate without handling the response here.
   // OTAUpdater will broadcast the update status over WebSocket.
@@ -217,29 +222,5 @@ void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::handleNotFound(AsyncWebServerRequest* request) {
-  request->send(404, "text/html", "<h1>404: Not Found</h1>");
-}
-
-void RouteHandler::handleJavaScriptRequest(AsyncWebServerRequest* request) {
-  String path = request->url();
-  String gzipPath = path + ".gz";
-
-  if (LittleFS.exists(gzipPath)) {  // Check if the gzip version exists
-    request->send(LittleFS, gzipPath, "application/javascript", false, nullptr);
-  } else {
-    request->send(LittleFS, path,
-                  "application/javascript");  // Fallback to normal JS file
-  }
-}
-
-void RouteHandler::handleCSSRequest(AsyncWebServerRequest* request) {
-  String path = request->url();
-  String gzipPath = path + ".gz";
-
-  if (LittleFS.exists(gzipPath)) {  // Check if the gzip version exists
-    request->send(LittleFS, gzipPath, "application/W", false, nullptr);
-  } else {
-    request->send(LittleFS, path,
-                  "application/javascript");  // Fallback to normal JS file
-  }
+  request->send(404, "text/html", "<h1>404: Not Found</h1><p>The requested file:" + request->url() + " was not found.</p>");
 }
