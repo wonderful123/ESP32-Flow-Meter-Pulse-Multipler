@@ -33,9 +33,8 @@ class RouteHandler {
   void deleteCalibrationRecord(AsyncWebServerRequest* request);
   void startCalibration(AsyncWebServerRequest* request);
   void stopCalibration(AsyncWebServerRequest* request);
+  void resetCalibration(AsyncWebServerRequest* request);
   void getFirmwareVersion(AsyncWebServerRequest* request);
   void handleOTAUpdate(AsyncWebServerRequest* request);
   void handleNotFound(AsyncWebServerRequest* request);
-  void handleJavaScriptRequest(AsyncWebServerRequest* request);
-  void handleCSSRequest(AsyncWebServerRequest * request);
 };
