@@ -1,6 +1,9 @@
 // DebugUtils.cpp
 #include "DebugUtils.h"
 
+#include <LittleFS.h>
+#include <dirent.h>  // Include for directory handling
+
 #if defined(ESP32)
 #include "esp_heap_caps.h"
 #include "esp_system.h"
@@ -23,7 +26,7 @@ void DebugUtils::logMemoryUsage() {
 
 void DebugUtils::logResetReason() {
   esp_reset_reason_t resetReason = esp_reset_reason();
-  const char *prefix = "Last reset reason: ";
+  const char* prefix = "Last reset reason: ";
 
   switch (resetReason) {
     case ESP_RST_UNKNOWN:
@@ -72,3 +75,51 @@ void DebugUtils::logResetReason() {
   LOG_DEBUG("Reset reason logging not supported on this platform");
 }
 #endif
+
+void DebugUtils::listFilesInDirectory(const std::string& path, int depth = 0) {
+  // Open the directory
+  DIR* dir = opendir(path.c_str());
+  if (!dir) {
+    LOG_DEBUG("Failed to open directory: {}", path);
+    return;
+  }
+
+  struct dirent* entry;
+  // Iterate through all the files in the directory
+  while ((entry = readdir(dir)) != nullptr) {
+    std::string name = entry->d_name;
+    if (name == "." || name == "..")
+      continue;  // Skip current and parent directory entries
+
+    // Create indentation for sub-levels
+    std::string indent(depth * 2,
+                       ' ');  // Increase indent by 2 spaces per depth level
+
+    if (entry->d_type == DT_DIR) {        // Directory
+      LOG_DEBUG("{}[{}]", indent, name);  // Display directory name
+      // Recursively list subdirectories
+      listFilesInDirectory(path + "/" + name, depth + 1);
+    } else if (entry->d_type == DT_REG) {  // Regular file
+      LOG_DEBUG("{}{}", indent, name);     // Display file name
+    }
+  }
+
+  // Close the directory to free resources
+  closedir(dir);
+}
+
+void DebugUtils::listFiles() {
+#if defined(ESP32)
+  // Check if LittleFS is available and mounted
+  if (!LittleFS.begin()) {
+    LOG_DEBUG("Failed to mount LittleFS");
+    return;
+  }
+
+  LOG_DEBUG("Listing all files in LittleFS:");
+  // Start recursive directory listing at the root
+  listFilesInDirectory("/littlefs");
+#else
+  LOG_DEBUG("LittleFS is not supported on this platform");
+#endif
+}
