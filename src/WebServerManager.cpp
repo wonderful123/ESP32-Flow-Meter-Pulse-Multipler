@@ -8,25 +8,25 @@
 #include "Settings.h"
 #include "logger.h"
 
-WebServerManager::WebServerManager(CalibrationManager& calibrationManager,
+WebServerManager::WebServerManager(AsyncWebServer& server,
+                                   CalibrationManager& calibrationManager,
                                    PulseCounter& pulseCounter)
     : _calibrationManager(calibrationManager),
       _pulseCounter(pulseCounter),
       _routeHandler(calibrationManager, pulseCounter, _otaUpdater, *this),
-      _server(80),
+      _server(server),
       _webSocketServer(WEBSOCKET_PORT),
       _otaUpdater(_webSocketServer),
       _fsManager() {}
 
 void WebServerManager::begin() {
+  _server.begin();
+  _webSocketServer.begin(&_server);
   if (_fsManager.mountFileSystem()) {
     _routeHandler.registerRoutes(_server);
   }
-
-  _webSocketServer.begin(&_server);
-  _server.begin();
   LOG_INFO("HTTP server started at IP address: {} ***",
-           WiFi.localIP().toString());
+           WiFi.localIP().toString().c_str());
   startMDNS();
   _epochTimeManager.begin();
   _otaUpdater.begin();
@@ -34,13 +34,9 @@ void WebServerManager::begin() {
 
 void WebServerManager::update() { _epochTimeManager.update(); }
 
-void WebServerManager::broadcastPulseCount(unsigned long pulseCount) {
-  _webSocketServer.broadcastPulseCount(pulseCount);
-}
-
 void WebServerManager::broadcastWebsocketMessage(String& type,
-                                                 JsonVariant& data) {
-  _webSocketServer.broadcastMessage(type, data);
+                                                 String& message) {
+  _webSocketServer.broadcastMessage(type, message);
 }
 
 void WebServerManager::startMDNS() {
