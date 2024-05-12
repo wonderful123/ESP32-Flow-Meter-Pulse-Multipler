@@ -1,24 +1,37 @@
 // VolumeInput.js
 import m from "mithril";
 import IconDrop from "icons/IconDrop";
+import Tooltip from 'components/common/Tooltip';
 
 const VolumeInput = {
   view: function (vnode) {
+    const {
+      label,
+      units,
+      ...attrs
+    } = vnode.attrs;
+
     return m("div.field", [
       m("label.label", {
-        for: vnode.attrs.id
-      }, vnode.attrs.label),
+        for: attrs.id
+      }, [
+        label,
+        ' ',
+        m('span', `(${units})`),
+        attrs.tooltip && m(Tooltip, {
+          text: attrs.tooltip
+        })
+      ]),
       m("div.control.has-icons-left", [
         m("input.input[type=number]", {
-          id: vnode.attrs.id,
-          name: vnode.attrs.name,
-          step: "0.01",
+          id: attrs.id,
+          name: attrs.name,
+          step: "0.1",
           min: "0.01",
-          placeholder: vnode.attrs.placeholder,
+          placeholder: attrs.placeholder,
           required: true,
-          // Use the value from vnode.attrs and update it on input
-          value: vnode.attrs.value, // Bind the input value to the state
-          oninput: (e) => vnode.attrs.onInput(e.target.value) // Notify parent component of changes
+          value: attrs.value,
+          oninput: attrs.oninput
         }),
         m("span.icon.is-small.is-left", [
           m(IconDrop, {
