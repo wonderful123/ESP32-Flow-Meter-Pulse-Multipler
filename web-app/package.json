@@ -1,12 +1,14 @@
 {
   "name": "flow-meter-pulse-multiplier-web-app",
   "version": "1.0.0",
-  "description": "Web app for the ESP8266 Flow Meter Pulse Multipler",
+  "description": "Web app for the ESP Flow Meter Pulse Multipler",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode production",
-    "build-bulma": "sass --load-path=node_modules public/main.scss ../data/bulma.css",
-    "start": "concurrently \"npm run build-bulma -- --watch\" \"pnpm run api\" \"webpack serve --mode development --open\"",
+    "build": "webpack --env mode=production --profile --color",
+    "watch-sass": "sass --watch --load-path=node_modules public/main.scss ../data/bulma.css",
+    "start-mock-api-server": "node json-server-mock.js",
+    "start-webpack-development-server": "webpack serve --env mode=development --profile --color",
+    "start-dev": "concurrently \"pnpm run watch-sass\" \"pnpm run start-mock-api-server\" \"pnpm run start-webpack-development-server\"",
     "clean": "rimraf dist/"
   },
   "engines": {
@@ -33,17 +35,20 @@
     "css-minimizer-webpack-plugin": "^6.0.0",
     "html-webpack-plugin": "^5.6.0",
     "json-server": "0.17.4",
-    "mini-css-extract-plugin": "^2.8.1",
+    "mini-css-extract-plugin": "^2.9.0",
     "purgecss-webpack-plugin": "^6.0.0",
     "rimraf": "^5.0.5",
     "sass": "^1.75.0",
-    "sass-loader": "^14.2.0",
+    "sass-loader": "^14.2.1",
+    "stats-webpack-plugin": "^0.7.0",
     "style-loader": "^3.3.4",
     "terser-webpack-plugin": "^5.3.10",
     "webpack": "^5.91.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^5.0.4",
+    "webpackbar": "^6.0.1",
+    "ws": "^8.17.0"
   },
   "dependencies": {
     "mithril": "^2.2.2"
