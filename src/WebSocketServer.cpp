@@ -7,12 +7,12 @@ WebSocketServer::WebSocketServer(uint16_t port) : _webSocket("/ws") {
   initialize();
 }
 
-void WebSocketManager::begin(AsyncWebServer* server) {
+void WebSocketServer::begin(AsyncWebServer* server) {
   server->addHandler(&_webSocket);
   LOG_INFO("Server started. Ready for connections");
 }
 
-void WebSocketManager::initialize() {
+void WebSocketServer::initialize() {
   eventHandlers[WS_EVT_CONNECT] = [this](AsyncWebSocketClient* client,
                                          void* arg, uint8_t* data, size_t len) {
     this->handleConnect(client, arg, data, len);
@@ -40,7 +40,7 @@ void WebSocketManager::initialize() {
   });
 }
 
-void WebSocketManager::onEvent(AsyncWebSocket* server,
+void WebSocketServer::onEvent(AsyncWebSocket* server,
                               AsyncWebSocketClient* client, AwsEventType type,
                               void* arg, uint8_t* data, size_t len) {
   logEventInfo(server, client, type, len);
@@ -51,23 +51,17 @@ void WebSocketManager::onEvent(AsyncWebSocket* server,
   }
 }
 
-void WebSocketManager::logEventInfo(AsyncWebSocket* server,
+void WebSocketServer::logEventInfo(AsyncWebSocket* server,
                                    AsyncWebSocketClient* client,
                                    AwsEventType type, size_t len) {
   LOG_DEBUG("ws[{}][{}] {}: {}", server->url(), client->id(),
             eventTypeToString(type), len);
 }
 
-const char* WebSocketManager::eventTypeToString(AwsEventType type) {
+const char* WebSocketServer::eventTypeToString(AwsEventType type) {
   static const char* strings[] = {"CONNECT", "DISCONNECT", "ERROR", "PONG",
                                   "DATA"};
   return strings[type < 5 ? type : 4];  // Return "DATA" for unknown types
-}
-
-void WebSocketServer::broadcastPulseCount(unsigned long pulseCount) {
-  if (_webSocket.count() > 0) {
-      _webSocket.printfAll("{\"pulseCount\": %lu}", pulseCount);
-  }
 }
 
 void WebSocketServer::broadcastJsonData(const String& type,

@@ -15,12 +15,12 @@
 
 class WebServerManager {
  public:
-  WebServerManager(CalibrationManager& calibrationManager,
+  WebServerManager(AsyncWebServer& server,
+                   CalibrationManager& calibrationManager,
                    PulseCounter& pulseCounter);
   void begin();
   void update();
-  void broadcastPulseCount(unsigned long pulseCount);
-  void broadcastWebsocketMessage(String& type, JsonVariant& data);
+  void broadcastWebsocketMessage(String& type, String& message);
   EpochTimeManager& getEpochTimeManager();
 
  private:
@@ -28,7 +28,7 @@ class WebServerManager {
   PulseCounter& _pulseCounter;
 
   RouteHandler _routeHandler;
-  AsyncWebServer _server;
+  AsyncWebServer& _server;
   WebSocketServer _webSocketServer;
   OTAUpdater _otaUpdater;
   FileSystemManager _fsManager;
