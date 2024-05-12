@@ -13,12 +13,13 @@ ApplicationManager::ApplicationManager()
       wiFiUtils(server, dns),
       pulseCounter(PULSE_PIN),
       calibrationManager(),
-      webServerManager(calibrationManager, pulseCounter),
+      webServerManager(server, calibrationManager, pulseCounter),
       scaledPulseGenerator(SCALED_OUTPUT_PIN, BASE_PULSE_DURATION_MICROS) {}
 
 void ApplicationManager::begin() {
   wiFiUtils.begin();
   pulseCounter.begin();
+  pulseCounter.startCounting();
   calibrationManager.begin();
   float outputScalingFactor = calibrationManager.getCalibrationFactor();
   scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
@@ -32,6 +33,7 @@ void ApplicationManager::begin() {
   LOG_INFO("Firmware version: " FIRMWARE_VERSION);
 #endif
   LOG_INFO("===========================================");
+  DebugUtils::listFiles();
 }
 
 void ApplicationManager::loop() {
@@ -51,8 +53,9 @@ void ApplicationManager::broadcastPulseCountAtInterval(
   if (currentTime - lastBroadcastTime >= interval) {
     lastBroadcastTime = currentTime;
     String type = "pulseCount";
-    JsonVariant doc;
-    doc["data"] = pulseCounter.getPulseCount();
-    webServerManager.broadcastWebsocketMessage(type, doc);
+    String message = String(pulseCounter.getPulseCount());
+    // LOG_DEBUG("Broadcasting pulse count: " +
+    //           String(pulseCounter.getPulseCount()));
+    webServerManager.broadcastWebsocketMessage(type, message);
   }
 }
