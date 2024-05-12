@@ -48,9 +48,13 @@ void OTAUpdater::setUpdateCheckFailCallback() {
     switch (errorCode) {
       case -1:
         logAndBroadcast("error", "OTA Error - Partition not found");
+        break;
       case -2:
         logAndBroadcast("error",
                         "OTA Error - Validation signature check failed");
+        break;
+      default:
+        logAndBroadcast("error", "OTA Error - Unknown error");
     }
   });
 }
