@@ -4,7 +4,10 @@
 PulseCounter::PulseCounter(uint8_t pulsePin)
     : _pulsePin(pulsePin), _pulseCount(0) {}
 
-void PulseCounter::begin() { pinMode(_pulsePin, INPUT_PULLUP); }
+void PulseCounter::begin() {
+  pinMode(_pulsePin, INPUT_PULLUP);
+  startCounting();
+}
 
 void IRAM_ATTR PulseCounter::handleInterrupt(void* arg) {
   PulseCounter* counter = reinterpret_cast<PulseCounter*>(arg);
