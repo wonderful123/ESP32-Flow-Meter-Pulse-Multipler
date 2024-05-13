@@ -16,7 +16,7 @@ const CalibrationRecords = {
       m(CalibrationTable, {
         calibrations: CalibrationRecordsModel.records
       }) :
-      m("p", "No calibration records available.")
+      m("p", "No calibration records found.")
     ]);
   }
 };
