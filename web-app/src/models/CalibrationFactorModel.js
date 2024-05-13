@@ -6,7 +6,7 @@ const CalibrationFactorModel = {
   factor: null,
   errorMessage: "",
   loadCalibrationFactor: function () {
-    const apiUrl = "calibration-factor"; // Adjust URL as needed
+    const apiUrl = "api/calibration-factor"; // Adjust URL as needed
     return m.request({
       method: "GET",
       url: apiUrl,
@@ -15,7 +15,7 @@ const CalibrationFactorModel = {
       CalibrationFactorModel.factor = result.calibrationFactor; // Adjust based on API response structure
     }).catch(error => {
       console.error("Error loading calibration factor:", error);
-      StatusMessageService.setMessage('Error loading scaling factor.', 'error');
+      StatusMessageService.setMessage('Error loading calibration factor.', 'error');
     });
   },
   setCalibrationFactor: function (newFactor) {
