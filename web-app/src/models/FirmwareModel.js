@@ -13,7 +13,7 @@ const FirmwareModel = {
     FirmwareModel.isLoading = true;
     m.request({
       method: "GET",
-      url: "/firmware-version",
+      url: "api/firmware-version",
     }).then((result) => {
       FirmwareModel.currentVersion = result.version;
       FirmwareModel.isLoading = false;
@@ -37,7 +37,7 @@ const FirmwareModel = {
     // You may need to adjust this function to properly handle OTA updates
     m.request({
       method: "POST",
-      url: "firmware-update",
+      url: "api/firmware-update",
       data: {
         url: url
       }, // Ensure your server expects this format
