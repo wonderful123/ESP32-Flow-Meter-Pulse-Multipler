@@ -1,6 +1,5 @@
 // CalibrationButtons.js
 import m from "mithril";
-import IconCalibrationSpinner from 'icons/IconCalibrationSpinner';
 
 const CalibrationButtons = {
   view: function (vnode) {
@@ -17,17 +16,21 @@ const CalibrationButtons = {
       m("button.button.is-info.is-fullwidth", {
         id: "start-calibration",
         disabled: startDisabled,
-        onclick: onStart // Attach the onStart handler
+        onclick: () => {
+          onStart();
+          vnode.state.startDisabled = true;
+          vnode.state.stopDisabled = false;
+        }
       }, "Start Calibration"),
       m("button.button.is-danger.is-fullwidth", {
         id: "stop-calibration",
         disabled: stopDisabled,
-        onclick: onStop // Attach the onStop handler
-      }, "Stop Calibration"),
-      isCalibrationStarted && m(IconCalibrationSpinner, {
-        class: "icon-class",
-        style: "width: 10px; height: auto;"
-      }),
+        onclick: () => {
+          onStop();
+          vnode.state.startDisabled = !vnode.attrs.isTargetVolumeValid;
+          vnode.state.stopDisabled = true;
+        }
+      }, "Stop Calibration")
     ]);
   }
 };
