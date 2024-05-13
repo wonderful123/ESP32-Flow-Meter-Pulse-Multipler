@@ -1,13 +1,71 @@
-// IconCalibration.js
-import m from 'mithril';
+/**
+ * IconCalibrationSpinner component for displaying a spinning calibration icon.
+ *
+ * @component
+ * @example
+ * // Using the spinner in a Mithril component
+ * import m from 'mithril';
+ * import IconCalibrationSpinner from './IconCalibrationSpinner';
+ *
+ * const MyComponent = {
+ *   view: function (vnode) {
+ *     return m('div', [
+ *       m('h1', 'My Component'),
+ *       m(IconCalibrationSpinner, {
+ *         class: 'my-spinner',
+ *         style: { fill: 'blue' },
+ *         isSpinning: vnode.state.isLoading
+ *       }),
+ *       m('button', {
+ *         onclick: () => {
+ *           vnode.state.isLoading = true;
+ *           // Simulate an asynchronous operation
+ *           setTimeout(() => {
+ *             vnode.state.isLoading = false;
+ *             m.redraw();
+ *           }, 2000);
+ *         }
+ *       }, 'Load Data')
+ *     ]);
+ *   }
+ * };
+ *
+ * @param {Object} [attrs] - Attributes passed to the component.
+ * @param {string} [attrs.class] - Additional CSS class name for the spinner.
+ * @param {Object} [attrs.style] - Inline styles for the spinner.
+ * @param {boolean} [attrs.isSpinning] - Determines if the spinner is visible and spinning.
+ */
 
 const IconCalibrationSpinner = {
+  /**
+   * Initialize the component state.
+   *
+   * @memberof IconCalibrationSpinner
+   * @param {Object} vnode - The vnode object representing the component.
+   */
+  oninit: function (vnode) {
+    // Initialize the spinning state to false
+    vnode.state.isSpinning = false;
+
+    // Define a function to toggle the spinning state
+    vnode.state.toggleSpin = function () {
+      vnode.state.isSpinning = !vnode.state.isSpinning;
+    };
+  },
+
+  /**
+   * Render the component.
+   *
+   * @memberof IconCalibrationSpinner
+   * @param {Object} vnode - The vnode object representing the component.
+   * @returns {Object} The virtual DOM representation of the component.
+   */
   view: function (vnode) {
     return m('svg', {
       viewBox: '0 0 64 64',
       'data-name': 'Layer 1',
       xmlns: 'http://www.w3.org/2000/svg',
-      class: "icon",
+      class: "icon" + (vnode.attrs.class || "") + (vnode.state.isSpinning ? " is-spinning" : ""), // Ensure any passed class is applied and add is-spinning if spinning
       fill: '#000000',
       stroke: '#000000',
       'stroke-width': '0.00064',
