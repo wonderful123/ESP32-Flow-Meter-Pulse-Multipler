@@ -6,8 +6,8 @@ const IconCalibrationSpinner = {
     return m('svg', {
       viewBox: '0 0 64 64',
       'data-name': 'Layer 1',
-      id: 'Layer_1',
       xmlns: 'http://www.w3.org/2000/svg',
+      class: "icon",
       fill: '#000000',
       stroke: '#000000',
       'stroke-width': '0.00064',
@@ -63,7 +63,7 @@ const IconCalibrationSpinner = {
           points: '39.8 8.21 47 7.75 43 14.68 39.8 8.21'
         })
       ])
-    ]);
+    ])
   }
 };
 
