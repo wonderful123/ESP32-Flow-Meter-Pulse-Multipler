@@ -5,16 +5,32 @@ import StatusMessageService from "services/StatusMessageService";
 const CalibrationRecordsModel = {
   records: [],
   loadRecords: function () {
-    const apiUrl = "calibration-records"; // Target API URL
+    const apiUrl = "api/calibration-records"; // Target API URL
     return m.request({
         method: "GET",
         url: apiUrl,
         withCredentials: true,
       })
       .then(function (result) {
+        console.log(result)
         CalibrationRecordsModel.records = result;
       })
   },
+
+    saveRecord: function (data) {
+      return m.request({
+        method: "POST",
+        url: "api/calibration-records",
+        body: data,
+        withCredentials: true,
+      }).then(function (result) {
+        StatusMessageService.setMessage("Calibration record saved successfully.", "success");
+        CalibrationRecordsModel.loadRecords(); // Refresh the list
+      }).catch(function (error) {
+        console.error('Error:', error);
+        StatusMessageService.setMessage("Failed to save the record. Please try again.", "error");
+      });
+    },
 
   deleteRecord: function (id) {
     // Use the browser's confirm dialog for confirmation
@@ -27,7 +43,7 @@ const CalibrationRecordsModel = {
 
     m.request({
       method: "DELETE",
-      url: `calibration-records/${id}`, // Adjust URL as needed
+      url: `api/calibration-records/${id}`, // Adjust URL as needed
       withCredentials: true, // For sending cookies in cross-origin requests, if needed
     }).then(() => {
       // On success, update the UI and show a success message
