@@ -16,7 +16,7 @@ const Navbar = {
     }, [
       m("span.icon.is-medium", [
         m(IconGear, {
-          class: "icon-class",
+          class: "icon",
           style: "width: 1.5rem; height: auto;"
         }),
       ]),
