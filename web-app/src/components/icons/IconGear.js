@@ -6,7 +6,7 @@ const IconGear = {
     return m("svg", {
       xmlns: "http://www.w3.org/2000/svg",
       viewBox: "0 0 504 504",
-      class: vnode.attrs.class, // Ensuring any passed class is applied
+      class: "icon" + (vnode.attrs.class || ""), // Ensuring any passed class is applied
       style: vnode.attrs.style, // Applying any passed style
     }, [
       m("circle", {

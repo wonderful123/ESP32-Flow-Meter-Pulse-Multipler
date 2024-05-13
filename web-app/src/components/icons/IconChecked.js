@@ -6,7 +6,7 @@ const IconChecked = {
     return m("svg", {
         xmlns: "http://www.w3.org/2000/svg",
         viewBox: "0 0 448 512",
-        class: vnode.attrs.class, // Apply any passed class
+        class: "icon" + (vnode.attrs.class || ""), // Ensuring any passed class is applied
         style: vnode.attrs.style, // Apply any passed style
         fill: "currentColor", // Ensure the SVG fill color inherits from its parent
       },
