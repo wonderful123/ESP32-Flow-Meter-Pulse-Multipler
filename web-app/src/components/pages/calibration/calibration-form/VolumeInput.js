@@ -27,7 +27,7 @@ const VolumeInput = {
           id: attrs.id,
           name: attrs.name,
           step: "0.1",
-          min: "0.01",
+          min: "0.1",
           placeholder: attrs.placeholder,
           required: true,
           value: attrs.value,
