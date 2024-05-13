@@ -18,11 +18,20 @@ const CalibrationForm = {
     pulsesPerLiter: 0,
     calibrationFactor: null,
     isCalibrationStarted: false,
+    isStartButtonDisabled: true,
+    isStopButtonDisabled: true,
     canSaveCalibration: false,
+  },
+
+  updateButtonStates() {
+    const isTargetVolumeValid = this.validateTargetVolume();
+    this.formState.isStartButtonDisabled = !isTargetVolumeValid || this.formState.isCalibrationStarted;
+    this.formState.isStopButtonDisabled = !this.formState.isCalibrationStarted;
   },
 
   oninit() {
     PulseCountService.pulseCount.map(this.updatePulseCount.bind(this));
+    this.updateButtonStates();
   },
 
   updatePulseCount(pulseCount) {
@@ -56,6 +65,8 @@ const CalibrationForm = {
       pulsesPerLiter: 0,
       calibrationFactor: null,
       isCalibrationStarted: false,
+      isStartButtonDisabled: true,
+      isStopButtonDisabled: true,
       canSaveCalibration: false,
     });
 
@@ -90,6 +101,8 @@ const CalibrationForm = {
       pulsesPerLiter,
       calibrationFactor,
       isCalibrationStarted,
+      isStartButtonDisabled,
+      isStopButtonDisabled,
       canSaveCalibration,
     } = this.formState;
 
@@ -119,6 +132,7 @@ const CalibrationForm = {
       oninput: (e) => {
         this.formState.targetVolume = e.target.value;
         this.calculateMetrics();
+        this.updateButtonStates();
       }
     });
   },
@@ -128,15 +142,18 @@ const CalibrationForm = {
       onStart: () => {
         this.formState.isCalibrationStarted = true;
         this.formState.pulseCount = 0;
+        this.updateButtonStates();
         CalibrationService.startCounter();
       },
       onStop: () => {
         this.formState.isCalibrationStarted = false;
         this.formState.canSaveCalibration = true;
+        this.updateButtonStates();
         CalibrationService.stopCounter();
       },
-      startDisabled: !this.validateTargetVolume(),
-      stopDisabled: !this.formState.isCalibrationStarted,
+      startDisabled: this.formState.isStartButtonDisabled,
+      stopDisabled: this.formState.isStopButtonDisabled,
+      isTargetVolumeValid: this.validateTargetVolume()
     });
   },
 
