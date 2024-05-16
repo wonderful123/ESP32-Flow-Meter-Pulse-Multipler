@@ -1,0 +1,46 @@
+#current-calibration-factor {
+  white-space: nowrap;
+}
+
+#calibration-form .field {
+  margin-top: 1rem;
+}
+
+#calibration-form .buttons {
+  margin-top: 1rem;
+}
+
+#calibration-list {
+  margin-top: 1rem;
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.table.is-hoverable tbody tr:not(.is-selected):hover {
+  background-color: #154d67 !important;
+}
+
+#calibration-summary:hover {
+  background-color: darkolivegreen;
+  cursor: pointer;
+}
+
+.selectable.selected,
+#calibrationSummary.selected {
+  background-color: #d0ffd0;
+  /* Light green, indicating selection */
+}
+
+.pulse-display {
+  padding: 5px 10px;
+  background-color: #444;
+  /* Dark background for display */
+  color: #ddd;
+  /* Light text color for contrast */
+  border-radius: 4px;
+  /* Rounded corners */
+  font-size: 1rem;
+  /* Adequate font size for readability */
+  margin-bottom: 0.5rem;
+  /* Spacing between elements */
+}
