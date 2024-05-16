@@ -1,46 +1,15 @@
-@use "cyborg-theme/variables";
+@use 'cyborg-theme/variables';
 
-@use "bulma/sass";
-@use "bulma/sass/utilities";
-@use "bulma/sass/base";
-@use "bulma/sass/themes";
-@use "bulma/sass/components/navbar";
-@use "bulma/sass/elements/button";
-@use "bulma/sass/elements/icon";
-@use "bulma/sass/elements/content";
-@use "bulma/sass/elements/notification";
-@use "bulma/sass/elements/progress";
+@use 'bulma/sass/utilities';
+@use 'bulma/sass/base';
+@use 'bulma/sass/components/navbar';
+@use 'bulma/sass/elements/button';
+@use 'bulma/sass/elements/icon';
+@use 'bulma/sass/elements/content';
+@use 'bulma/sass/elements/notification';
+@use 'bulma/sass/elements/progress';
 
-// Components
-@use "appNavbar";
-@use "calibrationPage";
-@use "components/tooltip.scss";
-@use "components/spinner.scss";
-
-
-main {
-  display: flex;
-  justify-content: center;
-  background-color: black;
-}
-
-p {
-  margin-block-end: revert;
-}
-
-.section {
-  max-width: 800px;
-  padding: 1rem 1rem 3rem 1rem;
-}
-
-.icon-text {
-  flex-wrap: nowrap;
-}
-
-.icon-text .icon:not(:last-child) {
-  margin-right: 0;
-}
-
-.icon {
-  fill: rgb(150, 150, 150);
-}
+// Custom styles
+@use 'base/base';
+@use 'pages';
+@use 'components';
