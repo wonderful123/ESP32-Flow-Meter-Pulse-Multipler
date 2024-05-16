@@ -1,0 +1,25 @@
+.data-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-basis: 50%;
+
+  &:not(:last-child) {
+    margin-bottom: 10px;
+  }
+
+  &__label {
+    margin-right: 1rem;
+  }
+
+  &__value {
+    flex-basis: 10rem;
+    text-align: right;
+    flex-grow: 0;
+    /* Prevent the item from growing */
+    flex-shrink: 1;
+    /* Allow the item to shrink */
+    min-width: 5rem;
+    /* Set a minimum width to prevent it from becoming too small */
+  }
+}

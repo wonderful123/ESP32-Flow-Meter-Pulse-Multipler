@@ -1,0 +1,29 @@
+.icon-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  .icon {
+    &:not(:last-child) {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.icon {
+  fill: rgb(150, 150, 150);
+
+  &.is-spinning {
+    animation: spin 1s infinite linear;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
