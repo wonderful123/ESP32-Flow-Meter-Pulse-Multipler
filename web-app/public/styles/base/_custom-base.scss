@@ -1,0 +1,23 @@
+// main {
+//   display: flex;
+//   justify-content: center;
+//   background-color: black;
+// }
+
+body {
+  //background-color: variables.$body-background-color;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+}
+
+p {
+  margin-block-end: revert;
+}
+
+.section {
+  max-width: 800px;
+  padding: 1rem 1rem 3rem;
+}
