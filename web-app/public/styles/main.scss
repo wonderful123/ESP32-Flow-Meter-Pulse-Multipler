@@ -1,7 +1,9 @@
 @use 'cyborg-theme/variables';
 
+@use 'bulma/sass';
 @use 'bulma/sass/utilities';
 @use 'bulma/sass/base';
+@use 'bulma/sass/themes';
 @use 'bulma/sass/components/navbar';
 @use 'bulma/sass/elements/button';
 @use 'bulma/sass/elements/icon';
@@ -10,6 +12,6 @@
 @use 'bulma/sass/elements/progress';
 
 // Custom styles
-@use 'base/base';
+@use 'base/custom-base';
 @use 'pages';
 @use 'components';
