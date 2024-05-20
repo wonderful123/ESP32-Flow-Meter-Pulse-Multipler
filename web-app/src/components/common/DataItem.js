@@ -31,10 +31,8 @@ const DataItem = {
       Icon && m(Icon, {
         className: 'data-item__icon'
       }),
-      m('div.data-item__content', [
-        m('span.data-item__label', label),
-        m('span.data-item__value', formattedValue),
-      ]),
+      m('span.data-item__label', label),
+      m('span.data-item__value', formattedValue),
     ]);
   },
 };
