@@ -14,6 +14,7 @@ const {
 const {
   BundleAnalyzerPlugin
 } = require('webpack-bundle-analyzer');
+
 const PATHS = {
   src: path.join(__dirname, "src"),
 };
@@ -22,7 +23,9 @@ const PATHS = {
 const PRODUCTION_OUTPUT_PATH = path.resolve(__dirname, '../data/www');
 const DEVELOPMENT_OUTPUT_PATH = path.resolve(__dirname, 'dist');
 const ENABLE_BUNDLE_ANALYZER = false; // Set to `true` to enable bundle analysis
-const TIMING_PROFILE_REPORT_FILENAME = path.resolve(__dirname, 'timingProfileReport.json'); // Used with the profiling plugin
+const DEVELOPMENT_SERVER_PORT = 8080;
+const DEVELOPMENT_WEBSOCKET_PORT = 8085;
+// const TIMING_PROFILE_REPORT_FILENAME = path.resolve(__dirname, 'timingProfileReport.json'); // Used with the profiling plugin
 // const BUILD_STATS_FILENAME = 'buildStats.json'; //path.resolve(__dirname, 'buildStats.json'); // Used with the stats plugin
 
 console.log('Starting Webpack configuration setup...');
@@ -51,6 +54,8 @@ module.exports = (env) => {
       static: './dist',
       open: true,
       hot: true,
+      liveReload: true,
+      port: DEVELOPMENT_SERVER_PORT,
       proxy: [{
           context: ['/api'],
           target: 'http://localhost:3000',
@@ -59,21 +64,24 @@ module.exports = (env) => {
           logLevel: 'debug'
         },
         {
-          context: ['/websocket'],
-          target: 'ws://localhost:8081',
+          context: ['/ws'],
+          target: `ws://localhost:${DEVELOPMENT_WEBSOCKET_PORT}`,
           changeOrigin: true,
           secure: false,
           logLevel: 'debug',
-          // ws: true
+          ws: true
         }
       ],
     },
     watchOptions: {
-      ignored: /node_modules/,
+      ignored: ['node_modules/**', 'dist/**'],
       poll: true, // Use polling if necessary (use as a last resort)
     },
     plugins: [
-      new MiniCssExtractPlugin(),
+      isProduction && new MiniCssExtractPlugin({
+        filename: '[name].css',
+        chunkFilename: '[id].css',
+      }),
       new WebpackBar(), // For progress bar
       new HtmlWebpackPlugin({
         title: 'Pulse Scaling Calibration Management',
@@ -97,12 +105,10 @@ module.exports = (env) => {
           minRatio: 0.8,
           deleteOriginalAssets: true,
         }),
-        new CssMinimizerPlugin(),
-        new TerserPlugin()
       ] : []),
-      new webpack.debug.ProfilingPlugin({
-        outputPath: TIMING_PROFILE_REPORT_FILENAME
-      }),
+      // new webpack.debug.ProfilingPlugin({
+      //   outputPath: TIMING_PROFILE_REPORT_FILENAME
+      // }),
       // new StatsPlugin(BUILD_STATS_FILENAME, {
       //   chunkModules: true,
       //   exclude: [/node_modules[\\\/]react/]
@@ -115,42 +121,54 @@ module.exports = (env) => {
     ].filter(Boolean),
     module: {
       rules: [{
-          test: /\.(png|svg|jpg|jpeg|gif)$/i,
-          type: 'asset/resource',
-        }, {
-          test: /\.(woff|woff2|eot|ttf|otf)$/i,
-          type: 'asset/resource',
-        },
-        {
-          test: /\.s?css$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            'css-loader',
-            'sass-loader'
-          ]
-        },
-      ],
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+      }, {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+      }, {
+        test: /\.s?css$/,
+        use: [
+          isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: !isProduction,
+            },
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: !isProduction,
+            },
+          },
+        ],
+      }],
     },
-    optimization: isProduction ? {
-      minimize: true,
-      minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
-      usedExports: true,
-      sideEffects: true,
+    optimization: {
+      minimize: isProduction,
+      minimizer: [
+        new TerserPlugin({
+          parallel: true,
+          terserOptions: {
+            compress: {
+              drop_console: true,
+            },
+          },
+        }),
+        new CssMinimizerPlugin({
+          parallel: true,
+        }),
+      ],
       splitChunks: {
         chunks: 'all',
         minSize: 20000,
-        minChunks: 1,
-        maxAsyncRequests: 30,
-        maxInitialRequests: 30,
-        enforceSizeThreshold: 50000,
+        maxSize: 500000,
         cacheGroups: {
           defaultVendors: {
             test: /[\\/]node_modules[\\/]/,
             priority: -10,
-            name(module) {
-              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-              return `npm.${packageName.replace('@', '')}`;
-            },
+            reuseExistingChunk: true,
           },
           default: {
             minChunks: 2,
@@ -159,7 +177,7 @@ module.exports = (env) => {
           },
         },
       },
-    } : {}, // Disable optimizations for development
+    },
     resolve: {
       alias: {
         components: path.resolve(__dirname, 'src/components/'),
@@ -168,12 +186,18 @@ module.exports = (env) => {
         icons: path.resolve(__dirname, 'src/components/icons/'),
         pages: path.resolve(__dirname, 'src/components/pages/'),
         layouts: path.resolve(__dirname, 'src/layouts/')
-      }
+      },
+      extensions: ['.js', '.jsx'],
+      modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+      unsafeCache: true,
     },
     cache: {
       type: 'filesystem', // or 'memory' for in-memory caching
       allowCollectingMemory: true, // This enables caching for node_modules (recommended for performance)
-    }
+      buildDependencies: {
+        config: [__filename],
+      },
+    },
   }
 
   return config;
