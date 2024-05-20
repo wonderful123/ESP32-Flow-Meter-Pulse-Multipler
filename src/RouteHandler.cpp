@@ -87,7 +87,7 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
 void RouteHandler::getCalibrationFactor(AsyncWebServerRequest* request) {
   float calibrationFactor = _calibrationManager.getCalibrationFactor();
   char buffer[32];
-  snprintf(buffer, sizeof(buffer), "{\"calibrationFactor\": %.2f}",
+  snprintf(buffer, sizeof(buffer), "{\"calibrationFactor\": { \"value\": %.2f } }",
            calibrationFactor);
   request->send(200, "application/json", buffer);
 }
