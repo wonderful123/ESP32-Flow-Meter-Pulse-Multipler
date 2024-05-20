@@ -8,6 +8,11 @@ import CalibrationPage from "pages/calibration/CalibrationPage"
 import FirmwarePage from "components/pages/firmware/FirmwarePage";
 import AboutPage from "components/pages/AboutPage";
 
+import WebSocketService from "./services/WebSocketService";
+
+// Initialize WebSocket connection
+WebSocketService.connect("ws://localhost:80");
+
 // Arguments:
 // - document.body: root element to mount app to
 // - "/": default route path
