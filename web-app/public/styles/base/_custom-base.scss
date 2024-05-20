@@ -4,11 +4,15 @@ main {
   justify-content: center;
 }
 
-p {
-  margin-block-end: revert;
-}
-
 .section {
   max-width: 800px;
   padding: 1rem 1rem 3rem;
+}
+
+.button {
+  margin-bottom: 1.5rem;
+}
+
+.subtitle {
+  font-weight: bold;
 }

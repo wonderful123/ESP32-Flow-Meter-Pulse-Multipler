@@ -3,10 +3,7 @@
   justify-content: space-between;
   align-items: center;
   flex-basis: 50%;
-
-  &:not(:last-child) {
-    margin-bottom: 10px;
-  }
+  margin-bottom: 1rem;
 
   &__label {
     margin-right: 1rem;
@@ -21,5 +18,9 @@
     /* Allow the item to shrink */
     min-width: 5rem;
     /* Set a minimum width to prevent it from becoming too small */
+    padding: 5px 10px;
+    background-color: #444;
+    color: #ddd;
+    border-radius: 4px;
   }
 }
