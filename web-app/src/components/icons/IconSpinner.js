@@ -1,17 +1,17 @@
 /**
- * IconCalibrationSpinner component for displaying a spinning calibration icon.
+ * IconSpinner component for displaying a spinning icon.
  *
  * @component
  * @example
  * // Using the spinner in a Mithril component
  * import m from 'mithril';
- * import IconCalibrationSpinner from './IconCalibrationSpinner';
+ * import IconCSpinner from './IconSpinner';
  *
  * const MyComponent = {
  *   view: function (vnode) {
  *     return m('div', [
  *       m('h1', 'My Component'),
- *       m(IconCalibrationSpinner, {
+ *       m(IconSpinner, {
  *         class: 'my-spinner',
  *         style: { fill: 'blue' },
  *         isSpinning: vnode.state.isLoading
@@ -36,11 +36,11 @@
  * @param {boolean} [attrs.isSpinning] - Determines if the spinner is visible and spinning.
  */
 
-const IconCalibrationSpinner = {
+const IconSpinner = {
   /**
    * Initialize the component state.
    *
-   * @memberof IconCalibrationSpinner
+   * @memberof IconSpinner
    * @param {Object} vnode - The vnode object representing the component.
    */
   oninit: function (vnode) {
@@ -56,7 +56,7 @@ const IconCalibrationSpinner = {
   /**
    * Render the component.
    *
-   * @memberof IconCalibrationSpinner
+   * @memberof IconSpinner
    * @param {Object} vnode - The vnode object representing the component.
    * @returns {Object} The virtual DOM representation of the component.
    */
@@ -125,4 +125,4 @@ const IconCalibrationSpinner = {
   }
 };
 
-export default IconCalibrationSpinner;
+export default IconSpinner;
