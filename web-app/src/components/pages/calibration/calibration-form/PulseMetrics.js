@@ -1,17 +1,6 @@
 // PulseMetrics.js
 import m from 'mithril';
-
-const formatPulseCount = (count) => {
-  return Math.max(0, parseInt(count, 10)).toString();
-};
-
-const formatPulsesPerLiter = (pulsesPerLiter) => {
-  return typeof pulsesPerLiter === 'number' ? pulsesPerLiter.toFixed(1) : '0.0';
-};
-
-const formatCalibrationFactor = (calibrationFactor) => {
-  return typeof calibrationFactor === 'number' ? `${calibrationFactor.toFixed(1)}%` : 'N/A';
-};
+import DataItem from 'components/common/DataItem';
 
 const PulseMetrics = {
   view(vnode) {
@@ -22,20 +11,33 @@ const PulseMetrics = {
     } = vnode.attrs;
 
     return m('div.pulse-info-display', [
-      m('div.field.pulse-metric', [
-        m('label.label.pulse-label', 'Pulse Count'),
-        m('div.pulse-display', formatPulseCount(pulseCount))
-      ]),
-      m('div.field.pulse-metric', [
-        m('label.label.pulse-label', 'Pulses/Liter'),
-        m('div.pulse-display', formatPulsesPerLiter(pulsesPerLiter))
-      ]),
-      m('div.field.pulse-metric', [
-        m('label.label.pulse-label', 'Output Calibration Factor'),
-        m('div.pulse-display', formatCalibrationFactor(calibrationFactor))
-      ])
+      m(DataItem, {
+        label: 'Pulse Count',
+        value: pulseCount,
+        format: {
+          decimalPlaces: 0,
+        },
+        className: 'pulse-metric',
+      }),
+      m(DataItem, {
+        label: 'Pulses/Liter',
+        value: pulsesPerLiter,
+        format: {
+          decimalPlaces: 1,
+        },
+        className: 'pulse-metric',
+      }),
+      m(DataItem, {
+        label: 'Output Calibration Factor',
+        value: calibrationFactor,
+        format: {
+          decimalPlaces: 1,
+          suffix: '%',
+        },
+        className: 'pulse-metric',
+      }),
     ]);
-  }
+  },
 };
 
 export default PulseMetrics;
