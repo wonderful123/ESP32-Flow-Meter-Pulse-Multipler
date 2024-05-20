@@ -11,8 +11,6 @@
 #include "RouteHandler.h"
 #include "WebSocketServer.h"
 
-#define WEBSOCKET_PORT 80
-
 class WebServerManager {
  public:
   WebServerManager(AsyncWebServer& server,
