@@ -1,21 +1,20 @@
 // ButtonManager.js
 const ButtonManager = {
-  init: function (formState) {
-    this.formState = formState;
+  buttonStates: {
+    startEnabled: false,
+    stopEnabled: false,
+    saveEnabled: false,
   },
-
-  updateButtonStates: function () {
+  updateButtonStates: function (formState) {
     this.buttonStates = {
-      startDisabled: this.isInputValid(),
-      stopEnabled: this.formState.isCalibrating,
-      saveEnabled: this.formState.isStopped,
+      startEnabled: this.isInputValid(formState),
+      stopEnabled: formState.isCalibrating,
+      saveEnabled: formState.isStopped,
     };
   },
-
-  isInputValid: function () {
-    return this.formState.targetVolume.trim() !== '';
+  isInputValid: function (formState) {
+    return formState.targetVolume > 0;
   },
-
   getButtonStates: function () {
     return this.buttonStates;
   },
