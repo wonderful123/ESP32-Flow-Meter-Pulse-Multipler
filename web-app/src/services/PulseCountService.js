@@ -1,11 +1,10 @@
 // PulseCountService.js
-import m from 'mithril';
 import Stream from 'mithril/stream';
 import WebSocketService from './WebSocketService';
 
 class PulseCountService {
   constructor() {
-    this.pulseCount = Stream();
+    this.pulseCount = Stream(0); // Initialize pulseCount as a stream with a default value of 0
     WebSocketService.registerHandler(this.handleMessage.bind(this));
   }
 
@@ -15,8 +14,7 @@ class PulseCountService {
 
   handleMessage(message) {
     if (message.type === 'pulseCount') {
-      this.pulseCount(message.data);
-      console.log("Received pulse count:", message.data);
+      this.pulseCount(message.data); // Update the pulseCount stream with the new value
     }
   }
 
