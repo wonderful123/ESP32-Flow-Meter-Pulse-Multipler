@@ -2,20 +2,59 @@
   "calibrationFactor": {
     "value": 1.25678
   },
-  "calibrationRecords": [{
-      "id": 1,
-      "targetVolume": 100,
-      "observedVolume": 98,
-      "pulseCount": 1200
-    },
+  "calibrationRecords": [
     {
       "id": 2,
       "targetVolume": 200,
       "observedVolume": 195,
       "pulseCount": 2400
+    },
+    {
+      "id": 3,
+      "targetVolume": 150,
+      "observedVolume": 148,
+      "pulseCount": 1500
+    },
+    {
+      "id": 5,
+      "targetVolume": 300,
+      "observedVolume": 295,
+      "pulseCount": 3600
+    },
+    {
+      "id": 6,
+      "targetVolume": 50,
+      "observedVolume": 49,
+      "pulseCount": 500
+    },
+    {
+      "id": 7,
+      "targetVolume": 400,
+      "observedVolume": 395,
+      "pulseCount": 4800
+    },
+    {
+      "id": 8,
+      "targetVolume": 500,
+      "observedVolume": 490,
+      "pulseCount": 6000
+    },
+    {
+      "id": 9,
+      "targetVolume": 600,
+      "observedVolume": 590,
+      "pulseCount": 7200
+    },
+    {
+      "id": 10,
+      "targetVolume": 700,
+      "observedVolume": 685,
+      "pulseCount": 8400
     }
   ],
-  "firmwareVersion": [{
-    "version": "1.0.0"
-  }]
+  "firmwareVersion": [
+    {
+      "version": "1.0.0"
+    }
+  ]
 }
