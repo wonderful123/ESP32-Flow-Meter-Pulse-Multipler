@@ -16,7 +16,7 @@ const CalibrationFactor = {
       m("div", {
         class: "flex-grow-1 is-align-self-center"
       }, [
-        m("h4.subtitle.p-5", "Current Output Calibration Factor:")
+        m("h4.subtitle.p-5", "Current Device Output Calibration Factor:")
       ]),
       // Calibration factor on the right half of the box
       m("div", {
