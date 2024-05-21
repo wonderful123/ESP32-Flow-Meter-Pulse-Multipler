@@ -14,7 +14,8 @@ const PULSE_COUNT_UPDATE_INTERVAL = 100; // in milliseconds
 
 // Create a WebSocket server
 const wss = new WebSocketServer({
-  port: WEBSOCKET_SERVER_PORT
+  port: WEBSOCKET_SERVER_PORT,
+  path: '/ws',
 });
 const clients = new Set();
 
@@ -35,6 +36,7 @@ let isPulseCountingActive = false;
 
 function startPulseCountSimulation() {
   if (!isPulseCountingActive) {
+    pulseCount = 0;
     console.log('Pulse count simulation started.');
     isPulseCountingActive = true;
     sendPulseCountUpdate();
@@ -57,9 +59,7 @@ function sendPulseCountUpdate() {
 
   const message = {
     type: 'pulseCount',
-    data: {
-      pulseCount: pulseCount,
-    },
+    data: pulseCount,
   };
 
   clients.forEach((client) => {
@@ -214,6 +214,7 @@ server.get('/api/calibration/stop', (req, res) => {
   stopPulseCountSimulation();
   console.log('Calibration stopped.');
   res.jsonp({
+    message: "Calibration stopped.",
     pulseCount: pulseCount
   });
 });
