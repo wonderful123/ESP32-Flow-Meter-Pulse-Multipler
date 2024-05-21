@@ -14,13 +14,15 @@ const CalibrationTableRow = {
     }
   }) {
     const Icon = isSelected ? IconChecked : IconUnchecked;
-    const pulsesPerLitre = item.observedVolume > 0 ? (item.pulseCount / item.observedVolume).toFixed(0) : "N/A";
-    const volumeDeviation = item.observedVolume > 0 ? (((item.observedVolume - item.targetVolume) / item.targetVolume) * 100).toFixed(0) + "%" : "N/A";
+    const pulsesPerLitre = item.observedVolume > 0 ? (item.pulseCount / item.observedVolume).toFixed(1) : "N/A";
+    const volumeDeviation = item.observedVolume > 0 ? (((item.observedVolume - item.targetVolume) / item.targetVolume) * 100).toFixed(1) + "%" : "N/A";
 
     // Create class string for "is-selected" depending if the row is selected or not
     const rowSelectedClass = isSelected ? "is-selected" : "";
 
-    return m("tr", {class: rowSelectedClass}, [
+    return m("tr", {
+      class: rowSelectedClass
+    }, [
       m("td", [
         m("a.icon", {
           onclick: () => onSelect(item.id),
@@ -37,11 +39,14 @@ const CalibrationTableRow = {
       m("td", volumeDeviation),
       m("td", [
         m("a.icon.has-text-danger.is-small", {
-          onclick: () => onDelete(item.id)
-        }, m(IconTrash, {
-          style: "cursor: pointer; width: 16px; height: 16px;"
-        }))
-      ])
+            onclick: () => onDelete(item),
+          },
+          m(IconTrash, {
+            class: 'is-danger',
+            style: "cursor: pointer; width: 16px; height: 16px;",
+          })
+        )
+      ]),
     ]);
   }
 };
