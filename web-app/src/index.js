@@ -11,7 +11,7 @@ import AboutPage from "components/pages/AboutPage";
 import WebSocketService from "./services/WebSocketService";
 
 // Initialize WebSocket connection
-WebSocketService.connect("ws://localhost:80");
+WebSocketService.connect("ws://localhost:8085/ws");
 
 // Arguments:
 // - document.body: root element to mount app to
