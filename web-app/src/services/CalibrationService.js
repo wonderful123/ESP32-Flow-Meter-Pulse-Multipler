@@ -9,7 +9,7 @@ const CalibrationService = {
       method: "GET",
       url: "api/calibration/start"
     }).then(response => {
-      StatusMessageService.setMessage(response.message, "info");
+      StatusMessageService.setMessage(response.message, "success");
     }).catch(error => {
       console.error("Error starting calibration:", error);
     });
@@ -20,6 +20,7 @@ const CalibrationService = {
       method: "GET",
       url: "api/calibration/stop"
     }).then(response => {
+      console.log("Calibration stopped.", response);
       StatusMessageService.setMessage(response.message, "info");
     }).catch(error => {
       console.error("Error stopping calibration:", error);
