@@ -63,14 +63,14 @@ module.exports = (env) => {
           secure: false,
           logLevel: 'debug'
         },
-        {
-          context: ['/ws'],
-          target: `ws://localhost:${DEVELOPMENT_WEBSOCKET_PORT}`,
-          changeOrigin: true,
-          secure: false,
-          logLevel: 'debug',
-          ws: true
-        }
+        // {
+        //   context: ['/ws'],
+        //   target: `ws://localhost:${DEVELOPMENT_WEBSOCKET_PORT}`,
+        //   changeOrigin: true,
+        //   secure: false,
+        //   logLevel: 'debug',
+        //   // ws: true
+        // }
       ],
     },
     watchOptions: {
