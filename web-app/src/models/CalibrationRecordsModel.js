@@ -12,7 +12,6 @@ const CalibrationRecordsModel = {
         withCredentials: true,
       })
       .then(function (result) {
-        console.log(result)
         CalibrationRecordsModel.records = result;
       })
   },
@@ -33,12 +32,6 @@ const CalibrationRecordsModel = {
     },
 
   deleteRecord: function (id) {
-    // Use the browser's confirm dialog for confirmation
-    const isConfirmed = window.confirm("Are you sure you want to delete this record?");
-    if (!isConfirmed) {
-      return; // Stop if the user cancels the action
-    }
-
     StatusMessageService.setMessage("Deleting record...", "info");
 
     m.request({
