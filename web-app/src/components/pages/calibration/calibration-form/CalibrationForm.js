@@ -13,97 +13,104 @@ import CalibrationService from 'services/CalibrationService';
 import PulseCountService from 'services/PulseCountService';
 
 const CalibrationForm = {
-  formState: {
-    startEnabled: true,
-    stopEnabled: false,
-    saveEnabled: false,
-    targetVolume: 0,
-    observedVolume: 0,
-    isCalibrating: false,
-    pulseCount: 0,
-    pulsesPerLiter: 0,
-    calibrationFactor: 0,
+  oninit: function (vnode) {
+    vnode.state.formState = {};
+    this.resetForm(vnode);
+
+    vnode.state.pulseCount = PulseCountService.getPulseCount(); // Returns a mithril Stream with the current pulse count
+    PulseCountService.pulseCount.map(() => m.redraw()); // Trigger redraw when the stream updates
   },
-  resetForm: function () {
-    this.formState = {
-      startEnabled: true,
+  resetForm: function (vnode) {
+    vnode.state.formState = {
+      startEnabled: false,
       stopEnabled: false,
       saveEnabled: false,
       targetVolume: 0,
       observedVolume: 0,
       isCalibrating: false,
-      pulseCount: 0,
       pulsesPerLiter: 0,
       calibrationFactor: 0,
+      startButtonText: 'Start Calibration',
     };
   },
-  oninit: function (vnode) {
-    this.resetForm();
-    this.pulseCountSubscription = PulseCountService.getPulseCount().subscribe((pulseCount) => {
-      this.formState.pulseCount = pulseCount;
-      m.redraw(); // Trigger a redraw to update the view
-    });
+  handleTargetVolumeChange: function (vnode, value) {
+    vnode.state.formState.targetVolume = value;
+    if (value > 0) {
+      vnode.state.formState.startEnabled = true;
+      this.calculateMetrics(vnode);
+    }
   },
-  onremove: function (vnode) {
-    this.pulseCountSubscription.unsubscribe();
+  handleObservedVolumeChange: function (vnode, value) {
+    vnode.state.formState.observedVolume = value;
+    this.calculateMetrics(vnode);
   },
-  handleTargetVolumeChange: function (value) {
-    this.formState.targetVolume = value;
-  },
-  handleStartClick: function () {
-    this.formState.isCalibrating = true;
-    this.formState.startEnabled = false;
-    this.formState.stopEnabled = true;
+  handleStartClick: function (vnode) {
+    vnode.state.formState.isCalibrating = true;
+    vnode.state.formState.startEnabled = false;
+    vnode.state.formState.stopEnabled = true;
+    vnode.state.formState.startButtonText = 'Calibration Running...';
     CalibrationService.startCounter();
   },
-  handleStopClick: function () {
-    this.formState.isCalibrating = false;
-    this.formState.startEnabled = true;
-    this.formState.stopEnabled = false;
+  handleStopClick: function (vnode) {
+    vnode.state.formState.isCalibrating = false;
+    vnode.state.formState.startEnabled = true;
+    vnode.state.formState.stopEnabled = false;
+    if (vnode.state.formState.targetVolume > 0) {
+      vnode.state.formState.startButtonText = 'Restart Calibration';
+    } else {
+      vnode.state.formState.startButtonText = 'Start Calibration';
+    }
     CalibrationService.stopCounter();
-    this.calculateMetrics(); // Calculate metrics when calibration is stopped
+    this.calculateMetrics(vnode);
   },
-  handleSaveClick: function () {
+  handleSaveClick: function (vnode) {
     // Perform save action
     console.log('Save button clicked');
   },
-  calculateMetrics: function () {
+  calculateMetrics: function (vnode) {
     const {
       targetVolume,
       observedVolume,
-      pulseCount
-    } = this.formState;
-    this.formState.pulsesPerLiter = calculatePulsesPerLiter(pulseCount, observedVolume);
-    this.formState.calibrationFactor = calculateCalibrationFactor(targetVolume, observedVolume);
+    } = vnode.state.formState;
+    const pulseCount = vnode.state.pulseCount();
+    vnode.state.formState.pulsesPerLiter = calculatePulsesPerLiter(pulseCount, observedVolume);
+    vnode.state.formState.calibrationFactor = calculateCalibrationFactor(targetVolume, observedVolume);
   },
-  view: function () {
+  view: function (vnode) {
+    const {
+      formState,
+      pulseCount
+    } = vnode.state;
     return [
-      m("h2.title", "Calibration Process:"),
-      m("h3.subtitle", "Step 1: Enter Target Volume"),
-      this.renderTargetVolumeInputField(),
-      m("label.label", "Step 2: Run Calibration"),
+      m("h2.title.is-spaced", "Calibration Process:"),
+      m("h3.subtitle.is-4.has-text-weight-semibold", "Step 1: Enter Target Volume"),
+      this.renderTargetVolumeInputField(vnode),
+      m("h3.subtitle.is-4.has-text-weight-bold", "Step 2: Run Calibration"),
       m(Button, {
-        text: "Start Calibration",
-        onclick: () => this.handleStartClick(),
-        enabled: this.formState.startEnabled,
+        text: formState.startButtonText,
+        onclick: () => this.handleStartClick(vnode),
+        enabled: formState.startEnabled,
         classes: 'is-info'
       }),
       m(Button, {
         text: "Stop Calibration",
-        onclick: () => this.handleStopClick(),
-        enabled: this.formState.stopEnabled,
+        onclick: () => this.handleStopClick(vnode),
+        enabled: formState.stopEnabled,
         classes: 'is-danger'
       }),
-      m("h3.subtitle", "Step 3: Enter Observed Volume"),
-      this.renderObservedVolumeInput(),
+      m("h3.subtitle.is-4.has-text-weight-semibold", "Step 3: Enter Observed Volume"),
+      this.renderObservedVolumeInput(vnode),
       m(PulseMetrics, {
-        pulseCount: this.formState.pulseCount,
-        pulsesPerLiter: this.formState.pulsesPerLiter,
-        calibrationFactor: this.formState.calibrationFactor,
+        pulseCount: pulseCount(),
+        pulsesPerLiter: formState.pulsesPerLiter,
+        calibrationFactor: formState.calibrationFactor,
       }),
     ];
   },
-  renderTargetVolumeInputField() {
+  renderTargetVolumeInputField(vnode) {
+    const {
+      formState
+    } = vnode.state;
     return m(VolumeInputField, {
       id: "target-volume",
       label: "Step 1: Enter Target Volume (Liters)",
@@ -111,14 +118,15 @@ const CalibrationForm = {
       tooltip: "Enter the desired target volume for calibration.",
       name: "targetVolume",
       placeholder: "Enter target volume",
-      value: this.formState.targetVolume,
-      oninput: (e) => {
-        this.formState.targetVolume = e.target.value;
-        this.calculateMetrics();
-      },
+      value: formState.targetVolume,
+      oninput: (e) => this.handleTargetVolumeChange(vnode, e.target.value),
     });
   },
-  renderObservedVolumeInput() {
+
+  renderObservedVolumeInput(vnode) {
+    const {
+      formState
+    } = vnode.state;
     return m(VolumeInputField, {
       id: "observed-volume",
       label: "Step 3: Enter Observed Volume (Liters)",
@@ -126,11 +134,8 @@ const CalibrationForm = {
       tooltip: "Enter the observed volume in liters.",
       name: "observedVolume",
       placeholder: "Enter observed volume",
-      value: this.formState.observedVolume,
-      oninput: (e) => {
-        this.formState.observedVolume = e.target.value;
-        this.calculateMetrics();
-      },
+      value: formState.observedVolume,
+      oninput: (e) => this.handleObservedVolumeChange(vnode, e.target.value),
     });
   },
 };
