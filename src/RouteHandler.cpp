@@ -26,6 +26,15 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
               this->setCalibrationFactor(request);
             });
 
+  server.on("/api/selected-record", HTTP_GET,
+            [this](AsyncWebServerRequest* request) {
+              this->getSelectedRecordId(request);
+            });
+  server.on("/api/selected-record", HTTP_POST,
+            [this](AsyncWebServerRequest* request) {
+              this->setSelectedRecordId(request);
+            });
+
   server.on("/api/calibration-records", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->getCalibrationRecords(request);
@@ -74,7 +83,7 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
   });
 
   // Serve static files from LittleFS
-   server.serveStatic("/", LittleFS, "/www/")
+  server.serveStatic("/", LittleFS, "/www/")
       .setDefaultFile("index.html")
       .setCacheControl("max-age=3600")
       .setFilter([](AsyncWebServerRequest* request) {
@@ -87,19 +96,40 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
 void RouteHandler::getCalibrationFactor(AsyncWebServerRequest* request) {
   float calibrationFactor = _calibrationManager.getCalibrationFactor();
   char buffer[32];
-  snprintf(buffer, sizeof(buffer), "{\"calibrationFactor\": { \"value\": %.2f } }",
-           calibrationFactor);
+  snprintf(buffer, sizeof(buffer),
+           "{\"calibrationFactor\": { \"value\": %.2f } }", calibrationFactor);
   request->send(200, "application/json", buffer);
 }
 
 void RouteHandler::setCalibrationFactor(AsyncWebServerRequest* request) {
   if (request->hasArg("calibrationFactor")) {
     float calibrationFactor = request->arg("calibrationFactor").toFloat();
-    _calibrationManager.setCalibrationFactor(calibrationFactor);
+    _calibrationManager.updateCalibrationFactor(calibrationFactor);
     request->send(200, "text/plain",
                   "Calibration factor updated successfully.");
   } else {
     request->send(400, "text/plain", "Missing CalibrationFactor parameter.");
+  }
+}
+
+void RouteHandler::getSelectedRecordId(AsyncWebServerRequest* request) {
+  size_t selectedRecordId = _calibrationManager.getSelectedRecordId();
+  String response = "{\"selectedRecordId\":" + String(selectedRecordId) + "}";
+  request->send(200, "application/json", response);
+}
+
+void RouteHandler::setSelectedRecordId(AsyncWebServerRequest* request) {
+  if (request->hasArg("id")) {
+    int id = request->arg("id").toInt();
+    if (id >= 0) {
+      _calibrationManager.setSelectedRecordId(id);
+    } else {
+      _calibrationManager.setSelectedRecordId(-1);  // Unset the selected record
+    }
+    request->send(200, "text/plain",
+                  "Selected record ID updated successfully.");
+  } else {
+    request->send(400, "text/plain", "Missing ID parameter.");
   }
 }
 
@@ -222,5 +252,7 @@ void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
 }
 
 void RouteHandler::handleNotFound(AsyncWebServerRequest* request) {
-  request->send(404, "text/html", "<h1>404: Not Found</h1><p>The requested file:" + request->url() + " was not found.</p>");
+  request->send(404, "text/html",
+                "<h1>404: Not Found</h1><p>The requested file:" +
+                    request->url() + " was not found.</p>");
 }
