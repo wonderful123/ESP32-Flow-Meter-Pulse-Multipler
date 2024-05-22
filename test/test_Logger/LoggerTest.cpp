@@ -1,4 +1,5 @@
 // #include "MockArduino.h"
+#include <ArduinoFake.h>
 #include <Logger.h>
 #include <gtest/gtest.h>
 
