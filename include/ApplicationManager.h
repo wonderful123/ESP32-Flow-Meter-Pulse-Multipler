@@ -29,4 +29,5 @@ class ApplicationManager {
   float outputScalingFactor;
 
   void broadcastPulseCountAtInterval(const unsigned long interval);
+  void onCalibrationFactorUpdated(float calibrationFactor);
 };

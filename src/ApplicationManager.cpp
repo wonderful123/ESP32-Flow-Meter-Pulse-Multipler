@@ -21,6 +21,9 @@ void ApplicationManager::begin() {
   pulseCounter.begin();
   pulseCounter.startCounting();
   calibrationManager.begin();
+  calibrationManager.registerCalibrationFactorUpdateCallback(
+      std::bind(&ApplicationManager::onCalibrationFactorUpdated, this,
+                std::placeholders::_1));
   float outputScalingFactor = calibrationManager.getCalibrationFactor();
   scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
   webServerManager.begin();
@@ -58,4 +61,8 @@ void ApplicationManager::broadcastPulseCountAtInterval(
     //           String(pulseCounter.getPulseCount()));
     webServerManager.broadcastWebsocketMessage(type, message);
   }
+}
+
+void ApplicationManager::onCalibrationFactorUpdated(float calibrationFactor) {
+  scaledPulseGenerator.updateScalingFactor(calibrationFactor);
 }
