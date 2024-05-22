@@ -1,6 +1,6 @@
 {
   "calibrationFactor": {
-    "value": 1.25678
+    "value": 0.9875
   },
   "calibrationRecords": [
     {
@@ -52,6 +52,7 @@
       "pulseCount": 8400
     }
   ],
+  "selectedRecordId": 5,
   "firmwareVersion": [
     {
       "version": "1.0.0"
