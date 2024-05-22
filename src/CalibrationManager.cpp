@@ -9,6 +9,45 @@ CalibrationManager::CalibrationManager(size_t maxRecords)
 void CalibrationManager::begin() {
   _eepromManager.begin();
   _eepromManager.loadCalibrationRecords(_calibrationHistory);
+  _eepromManager.loadSelectedRecordId(_selectedRecordId);
+}
+
+void CalibrationManager::setSelectedRecordId(size_t id) {
+  _selectedRecordId = id;
+  _eepromManager.saveSelectedRecordId(id);
+
+  if (id == -1) {
+    // Unset the selected record and revert to the default setting
+    updateCalibrationFactor(DEFAULT_CALIBRATION_FACTOR);
+  } else {
+    // Set the calibration factor based on the selected record
+    CalibrationRecord record;
+    if (findRecordById(id, record)) {
+      updateCalibrationFactor(record.calibrationFactor);
+    }
+  }
+}
+
+size_t CalibrationManager::getSelectedRecordId() const {
+  return _selectedRecordId;
+}
+
+void CalibrationManager::registerCalibrationFactorUpdateCallback(
+    std::function<void(float)> callback) {
+  _calibrationFactorUpdateCallback = callback;
+}
+
+void CalibrationManager::updateCalibrationFactor(float calibrationFactor) {
+  _eepromManager.saveCalibrationFactor(calibrationFactor);
+  if (_calibrationFactorUpdateCallback) {
+    _calibrationFactorUpdateCallback(calibrationFactor);
+  }
+}
+
+float CalibrationManager::getCalibrationFactor() const {
+  float calibrationFactor = DEFAULT_CALIBRATION_FACTOR;
+  _eepromManager.loadCalibrationFactor(calibrationFactor);
+  return calibrationFactor;
 }
 
 void CalibrationManager::addCalibrationRecord(
@@ -28,16 +67,6 @@ void CalibrationManager::addCalibrationRecord(
 
   _calibrationHistory.push_back(newRecord);
   updateCalibrationHistory();  // Reflect the changes in EEPROM
-}
-
-void CalibrationManager::setCalibrationFactor(float calibrationFactor) {
-  _eepromManager.saveCalibrationFactor(calibrationFactor);
-}
-
-float CalibrationManager::getCalibrationFactor() const {
-  float calibrationFactor = DEFAULT_CALIBRATION_FACTOR;
-  _eepromManager.loadCalibrationFactor(calibrationFactor);
-  return calibrationFactor;
 }
 
 void CalibrationManager::updateCalibrationHistory() {
