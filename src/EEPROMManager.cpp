@@ -16,6 +16,18 @@ void EEPROMManager::begin() {
   }
 }
 
+bool EEPROMManager::saveSelectedRecordId(size_t id) {
+  size_t address = EEPROM_SIZE - sizeof(float) - sizeof(size_t);
+  EEPROM.put(address, id);
+  return EEPROM.commit();
+}
+
+bool EEPROMManager::loadSelectedRecordId(size_t& id) const {
+  size_t address = EEPROM_SIZE - sizeof(float) - sizeof(size_t);
+  EEPROM.get(address, id);
+  return true;
+}
+
 bool EEPROMManager::saveCalibrationFactor(float calibrationFactor) {
   if (calibrationFactor <= 0 || isnan(calibrationFactor)) {
     // Invalid calibration factor

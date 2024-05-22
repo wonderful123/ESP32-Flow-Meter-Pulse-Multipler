@@ -31,6 +31,8 @@ class EEPROMManager {
  public:
   EEPROMManager(size_t maxRecords);
   void begin();
+  bool saveSelectedRecordId(size_t id);
+  bool loadSelectedRecordId(size_t& id) const;
   bool saveCalibrationFactor(float calibrationFactor);
   bool loadCalibrationFactor(float& calibrationFactor) const;
   bool saveCalibrationRecord(size_t index, const CalibrationRecord& record);
