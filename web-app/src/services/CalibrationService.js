@@ -20,7 +20,6 @@ const CalibrationService = {
       method: "GET",
       url: "api/calibration/stop"
     }).then(response => {
-      console.log("Calibration stopped.", response);
       StatusMessageService.setMessage(response.message, "info");
     }).catch(error => {
       console.error("Error stopping calibration:", error);
