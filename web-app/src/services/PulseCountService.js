@@ -18,8 +18,12 @@ class PulseCountService {
     }
   }
 
-  getPulseCount() {
+  getPulseCountStream() {
     return this.pulseCount;
+  }
+
+  getPulseCount() {
+    return this.pulseCount();
   }
 }
 
