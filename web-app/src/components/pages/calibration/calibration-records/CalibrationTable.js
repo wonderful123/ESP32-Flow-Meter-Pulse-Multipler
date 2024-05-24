@@ -3,6 +3,7 @@ import m from "mithril";
 import CalibrationTableRow from "./CalibrationTableRow";
 import CalibrationSummaryRow from "./CalibrationSummaryRow";
 import CalibrationRecordsModel from "models/CalibrationRecordsModel";
+import SelectedRecordModel from "models/SelectedRecordModel";
 import CalibrationFactorModel from "models/CalibrationFactorModel";
 import StatusMessageService from "services/StatusMessageService";
 import ConfirmationModal from "components/common/ConfirmationModal";
@@ -11,6 +12,13 @@ const CalibrationTable = {
   selectedRowId: null,
   itemToDelete: null,
   isDeleteModalOpen: false,
+
+  oninit: function (vnode) {
+    SelectedRecordModel.loadSelectedRecordId().then((selectedRecordId) => {
+      this.selectedRowId = selectedRecordId;
+      m.redraw(); // Redraw the component to reflect the selected row
+    });
+  },
 
   openDeleteModal: function (item) {
     this.itemToDelete = item;
@@ -33,18 +41,26 @@ const CalibrationTable = {
     if (this.selectedRowId === id) {
       this.selectedRowId = null;
       StatusMessageService.setMessage("Default calibration factor restored.", "success");
+      SelectedRecordModel.setSelectedRecordId(-1); // Unset the selected record ID on the backend
     } else {
       this.selectedRowId = id;
+      SelectedRecordModel.setSelectedRecordId(id); // Set the selected record ID on the backend
       const selectedRecord = CalibrationRecordsModel.records.find(record => record.id === id);
       if (selectedRecord) {
-        CalibrationFactorModel.setCalibrationFactor(selectedRecord.calibrationFactor);
+        // Calculate the calibration factor based on the selected record
+        const {
+          targetVolume,
+          observedVolume
+        } = selectedRecord;
+        const calibrationFactor = observedVolume / targetVolume;
+        // Set the calibration factor and display a success message
+        CalibrationFactorModel.setCalibrationFactor(calibrationFactor);
         StatusMessageService.setMessage(`Calibration factor updated`, "success");
       } else {
         // Handle deselection or resetting the factor to a default
         CalibrationFactorModel.setCalibrationFactor(null); // or a default value
         StatusMessageService.setMessage("Default calibration factor restored.", "success");
       }
-
       m.redraw();
     }
   },
@@ -61,7 +77,7 @@ const CalibrationTable = {
     return m("div.table-container", [
       m("table.table.is-fullwidth.is-striped.is-hoverable", [
         m("thead",
-          m("tr", ["Set As Calibration", "ID", "Target Volume (L)", "Observed Volume (L)", "Pulses per Litre", "Volume Deviation (%)", "Actions"].map(header => m("th", header)))
+          m("tr", ["Set As Calibration", "Target Volume (L)", "Observed Volume (L)", "Pulses per Litre", "Volume Deviation (%)", "Actions"].map(header => m("th", header)))
         ),
         m("tbody", [
           calibrations.map(item => m(CalibrationTableRow, {
