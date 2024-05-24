@@ -18,11 +18,25 @@ const CalibrationFactorModel = {
       StatusMessageService.setMessage('Error loading calibration factor.', 'error');
     });
   },
+
   setCalibrationFactor: function (newFactor) {
-    // Here you might want to make an API call to update the factor in the backend as well
-    this.factor = newFactor;
-    // Optionally update the status message to reflect the change
-    StatusMessageService.setMessage(`Calibration factor set to ${newFactor}.`, "info");
+    const apiUrl = "api/calibration-factor"; // Adjust URL as needed
+    console.log("Calibration factor:", newFactor);
+    return m.request({
+      method: "POST",
+      url: apiUrl,
+      body: {
+        CalibrationFactor: newFactor
+      },
+      withCredentials: true,
+    }).then(response => {
+      console.log("Calibration factor response:", response);
+      CalibrationFactorModel.factor = newFactor;
+      StatusMessageService.setMessage(response, "info");
+    }).catch(error => {
+      console.error("Error setting calibration factor:", error);
+      StatusMessageService.setMessage('Error setting calibration factor.', 'error');
+    });
   }
 };
 

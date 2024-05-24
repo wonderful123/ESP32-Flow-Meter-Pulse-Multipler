@@ -16,20 +16,35 @@ const CalibrationRecordsModel = {
       })
   },
 
-    saveRecord: function (data) {
-      return m.request({
-        method: "POST",
-        url: "api/calibration-records",
-        body: data,
-        withCredentials: true,
-      }).then(function (result) {
-        StatusMessageService.setMessage("Calibration record saved successfully.", "success");
-        CalibrationRecordsModel.loadRecords(); // Refresh the list
-      }).catch(function (error) {
-        console.error('Error:', error);
-        StatusMessageService.setMessage("Failed to save the record. Please try again.", "error");
-      });
-    },
+  saveRecord: function (data) {
+    return m.request({
+      method: "POST",
+      url: "api/calibration-records",
+      body: data,
+      withCredentials: true,
+    }).then(function (result) {
+      StatusMessageService.setMessage("Calibration record saved successfully.", "success");
+      CalibrationRecordsModel.loadRecords(); // Refresh the list
+    }).catch(function (error) {
+      console.error('Error:', error);
+      StatusMessageService.setMessage("Failed to save the record. Please try again.", "error");
+    });
+  },
+
+  editRecord: function (id, data) {
+    return m.request({
+      method: "PUT",
+      url: `api/calibration-records/${id}`,
+      body: data,
+      withCredentials: true,
+    }).then(function (result) {
+      StatusMessageService.setMessage("Calibration record updated successfully.", "success");
+      CalibrationRecordsModel.loadRecords(); // Refresh the list
+    }).catch(function (error) {
+      console.error('Error:', error);
+      StatusMessageService.setMessage("Failed to update the record. Please try again.", "error");
+    });
+  },
 
   deleteRecord: function (id) {
     StatusMessageService.setMessage("Deleting record...", "info");
