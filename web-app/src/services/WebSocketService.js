@@ -1,85 +1,110 @@
-// WebSocketService.js
-class WebSocketService {
-  constructor() {
-    this.socket = null;
-    this.handlers = [];
-    this.reconnectDelay = 5000; // Initial reconnect delay
-    this.url = ''; // Store the last used URL for reconnections
-  }
+import config from "config";
 
-  connect(url) {
-    this.url = url; // Remember URL for reconnection attempts
+const WebSocketService = {
+  socket: null,
+  reconnectDelay: config.websocket.reconnectDelay,
+  maxReconnectAttempts: config.websocket.maxReconnectAttempts,
+  reconnectAttempts: 0,
+  url: '',
+  handlers: {},
+  connectionStatus: 'disconnected',
+  messageQueue: [],
+
+  connect: function () {
+    const wsURL = process.env.WEBSOCKET_PORT || config.websocket.url;
+    const wsPort = process.env.WEBSOCKET_PORT || config.websocket.port;
+    this.socket = new WebSocket(`ws://${wsURL}:${wsPort}`);
+
     if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
       console.log("WebSocket is already connected or connecting");
       return;
     }
 
-    this.socket = new WebSocket(url);
-
     this.socket.onopen = () => {
-      console.log("WebSocket connected");
-      this.reconnectDelay = 5000; // Reset reconnect delay on successful connection
-    };
-
-    this.socket.onclose = () => {
-      console.log("WebSocket disconnected. Attempting to reconnect...");
-      setTimeout(() => this.attemptReconnect(), this.reconnectDelay);
-      this.reconnectDelay = Math.min(this.reconnectDelay * 2, 60000); // Cap at 1 minute
-    };
-
-    this.socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.log('WebSocket connection established');
+      this.connectionStatus = 'connected';
+      this.reconnectAttempts = 0;
+      this.reconnectDelay = config.websocket.reconnectDelay;
+      this.flushMessageQueue();
     };
 
     this.socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        this.handlers.forEach(handler => handler(message));
+        const messageType = message.type;
+        if (this.handlers[messageType]) {
+          this.handlers[messageType].forEach(handler => handler(message));
+        }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
       }
     };
-  }
 
-  disconnect() {
+    this.socket.onclose = () => {
+      console.log("WebSocket disconnected. Attempting to reconnect...");
+      this.connectionStatus = 'disconnected';
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++;
+        setTimeout(() => this.connect(this.url), this.reconnectDelay);
+        this.reconnectDelay = Math.min(this.reconnectDelay * 2, 60000);
+      } else {
+        console.error("Maximum reconnection attempts reached. Giving up.");
+        this.connectionStatus = 'failed';
+      }
+    };
+
+    this.socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      this.connectionStatus = 'error';
+    };
+  },
+
+  disconnect: function () {
     if (this.socket) {
       this.socket.close();
     }
-  }
+  },
 
-  attemptReconnect() {
-    console.log("Attempting to reconnect...");
-    this.manualReconnect();
-  }
-
-  manualReconnect() {
-    console.log("Manual reconnection triggered");
-    this.reconnectDelay = 5000; // Optionally reset delay
-    if (this.socket) {
-      this.socket.close(); // Ensure the existing connection is closed before reconnecting
-    }
-    this.connect(this.url);
-  }
-
-  sendMessage(message) {
+  sendMessage: function (message) {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(message));
     } else {
-      console.error("WebSocket is not connected.");
+      console.warn("WebSocket is not connected. Queueing the message.");
+      this.messageQueue.push(message);
     }
-  }
+  },
 
-  registerHandler(handler) {
-    this.handlers.push(handler);
-  }
+  registerHandler: function (messageType, handler) {
+    if (!this.handlers[messageType]) {
+      this.handlers[messageType] = [];
+    }
+    this.handlers[messageType].push(handler);
+  },
 
-  unregisterHandler(handler) {
-    this.handlers = this.handlers.filter(h => h !== handler);
-  }
+  unregisterHandler: function (messageType, handler) {
+    if (this.handlers[messageType]) {
+      this.handlers[messageType] = this.handlers[messageType].filter(h => h !== handler);
+    }
+  },
 
-  getConnectionStatus() {
-    return this.socket ? this.socket.readyState : WebSocket.CLOSED;
-  }
-}
+  unregisterAllHandlers: function () {
+    this.handlers = {};
+  },
 
-export default new WebSocketService();
+  getConnectionStatus: function () {
+    return this.connectionStatus;
+  },
+
+  setURL: function (url) {
+    this.url = url;
+  },
+
+  flushMessageQueue: function () {
+    while (this.messageQueue.length > 0) {
+      const message = this.messageQueue.shift();
+      this.sendMessage(message);
+    }
+  },
+};
+
+export default WebSocketService;
