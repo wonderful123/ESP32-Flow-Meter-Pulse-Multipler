@@ -12,41 +12,43 @@ const FirmwareModel = {
   getFirmwareVersion: function () {
     FirmwareModel.isLoading = true;
     m.request({
-      method: "GET",
-      url: "api/firmware-version",
-    }).then((result) => {
-      FirmwareModel.currentVersion = result.version;
-      FirmwareModel.isLoading = false;
-      m.redraw();
-    }).catch(() => {
-      FirmwareModel.currentVersion = "Error fetching version";
-      FirmwareModel.isLoading = false;
-      m.redraw();
-    });
+        method: "GET",
+        url: "api/firmware-version",
+      })
+      .then(() => {
+        // The server will initiate the update check via WebSocket
+        FirmwareModel.isLoading = false;
+        m.redraw();
+      })
+      .catch(() => {
+        FirmwareModel.currentVersion = "Error fetching version";
+        FirmwareModel.isLoading = false;
+        m.redraw();
+      });
   },
 
   checkForUpdate: function () {
-    // Assuming this triggers a check on the server which then sends a WebSocket message
+    // Send a WebSocket message to trigger the update check on the server
     FirmwareModel.isLoading = true;
     WebSocketService.sendMessage({
       action: "checkForUpdate"
     });
   },
 
-  performOTAUpdate: function (url) {
-    // You may need to adjust this function to properly handle OTA updates
+  performOTAUpdate: function () {
+    // Trigger the OTA update on the server
     m.request({
-      method: "POST",
-      url: "api/firmware-update",
-      data: {
-        url: url
-      }, // Ensure your server expects this format
-    }).then((result) => {
-      FirmwareModel.updateStatus = result;
-      m.redraw();
-    }).catch(() => {
-      FirmwareModel.updateStatus = "Error performing OTA update";
-    });
+        method: "POST",
+        url: "api/firmware-update",
+      })
+      .then(() => {
+        // The server will initiate the OTA update process via WebSocket
+        m.redraw();
+      })
+      .catch(() => {
+        FirmwareModel.updateStatus = "Error performing OTA update";
+        m.redraw();
+      });
   },
 
   initWebSocket() {
@@ -63,15 +65,12 @@ const FirmwareModel = {
           this.updateStatus = `Error checking update: ${message.message}`;
           break;
         case "updateAvailable":
-          this.updateAvailable = `Update to version ${message.newVersion} available. Changes: ${message.changes}`;
+          this.updateAvailable = `Update to version ${message.newVersion} available.<br>Changes: ${message.changes}`;
           this.updateStatus = "";
           break;
         case "noUpdate":
           this.updateAvailable = null;
           this.updateStatus = message.message;
-          break;
-        case "updateStarted":
-          FirmwareModel.updateStatus = "Update started";
           break;
         case "updateCompleted":
           FirmwareModel.updateStatus = "Update completed";
@@ -85,7 +84,7 @@ const FirmwareModel = {
 
     // Automatically connect; adjust URL as needed
     WebSocketService.connect('ws://' + window.location.hostname + '/ws');
-  }
+  },
 };
 
 export default FirmwareModel;
