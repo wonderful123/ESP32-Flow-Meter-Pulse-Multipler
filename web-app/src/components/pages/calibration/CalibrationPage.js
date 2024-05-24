@@ -18,6 +18,7 @@ const CalibrationPage = {
         m(CalibrationFactor), // Display the current calibration factor
         m(StatusMessageBox), // Display status messages
         m(CalibrationForm), // Form for submitting new calibration records
+        m("hr"),
         m(CalibrationRecords), // List of existing calibration records
       ]);
   }
