@@ -32,7 +32,6 @@ const CalibrationTableRow = {
           style: "cursor: pointer; width: 16px; height: 16px;"
         }))
       ]),
-      m("td", item.id),
       m("td", item.targetVolume.toFixed(2)),
       m("td", item.observedVolume.toFixed(2)),
       m("td", pulsesPerLitre),

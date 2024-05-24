@@ -45,7 +45,7 @@ const CalibrationSummaryRow = {
         )
       ]),
       m("td", {
-        colspan: 3
+        colspan: 2
       }, "Average: "),
       m("td", averagePulsesPerLitre),
       m("td", averageVolumeDeviation),
