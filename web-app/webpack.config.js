@@ -63,6 +63,7 @@ module.exports = (env) => {
           secure: false,
           logLevel: 'debug'
         },
+        // Can't get this to work. It works fine without.
         // {
         //   context: ['/ws'],
         //   target: `ws://localhost:${DEVELOPMENT_WEBSOCKET_PORT}`,
@@ -87,6 +88,9 @@ module.exports = (env) => {
         title: 'Pulse Scaling Calibration Management',
         template: 'public/index.html',
         favicon: 'public/favicon.ico'
+      }),
+      new webpack.DefinePlugin({
+        'process.env.WEBSOCKET_PORT': JSON.stringify(isProduction ? 80 : DEVELOPMENT_WEBSOCKET_PORT),
       }),
       ...(isProduction ? [
         new PurgeCSSPlugin({
