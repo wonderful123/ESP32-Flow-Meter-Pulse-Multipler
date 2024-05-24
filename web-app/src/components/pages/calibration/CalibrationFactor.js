@@ -6,7 +6,7 @@ const CalibrationFactor = {
   oninit: CalibrationFactorModel.loadCalibrationFactor,
   view: function () {
     const currentCalibrationFactor = (CalibrationFactorModel.factor !== null && CalibrationFactorModel.factor !== undefined) ?
-      CalibrationFactorModel.factor.toFixed(2) :
+      `${(CalibrationFactorModel.factor * 100).toFixed(2)}%`:
       "Loading...";
 
     return m("div.box#calibration-factor-container", {
