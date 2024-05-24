@@ -36,7 +36,7 @@ const VolumeInputField = {
           placeholder: value === 0 ? placeholder : '',
           required: true,
           value: displayValue,
-          oninput: oninput,
+          oninput: handleInputChange,
           ...inputAttributes,
         }),
         m("span.icon.is-left", [
