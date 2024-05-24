@@ -24,6 +24,32 @@ wss.on('connection', (ws) => {
   console.log(`WebSocket client connected. Total clients: ${clients.size + 1}`);
   clients.add(ws);
 
+  ws.on('message', (message) => {
+    const data = JSON.parse(message);
+    if (data.action === 'checkForUpdate') {
+      // Simulate checking for firmware update
+      const currentVersion = '1.0.0';
+      const newVersion = '1.1.0';
+      const updateAvailable = currentVersion !== newVersion;
+
+      if (updateAvailable) {
+        const response = {
+          type: 'updateAvailable',
+          currentVersion,
+          newVersion,
+          changes: 'Bug fixes and performance improvements',
+        };
+        ws.send(JSON.stringify(response));
+      } else {
+        const response = {
+          type: 'noUpdate',
+          message: 'Firmware is up to date',
+        };
+        ws.send(JSON.stringify(response));
+      }
+    }
+  });
+
   ws.on('close', () => {
     console.log(`WebSocket client disconnected. Total clients: ${clients.size - 1}`);
     clients.delete(ws);
@@ -52,11 +78,7 @@ function stopPulseCountSimulation() {
   }
 }
 
-function sendPulseCountUpdate() {
-  if (!isPulseCountingActive) return;
-
-  pulseCount += Math.floor(Math.random() * 5); // Increment pulse count by a random value between 0 and 4
-
+function sendPulseCount() {
   const message = {
     type: 'pulseCount',
     data: pulseCount,
@@ -67,7 +89,13 @@ function sendPulseCountUpdate() {
       client.send(JSON.stringify(message));
     }
   });
+}
 
+function sendPulseCountUpdate() {
+  if (!isPulseCountingActive) return;
+
+  pulseCount += Math.floor(Math.random() * 5); // Increment pulse count by a random value between 0 and 4
+  sendPulseCount();
   setTimeout(sendPulseCountUpdate, PULSE_COUNT_UPDATE_INTERVAL);
 }
 
@@ -84,17 +112,13 @@ server.use((req, res, next) => {
 server.use(jsonServer.bodyParser);
 
 server.post('/api/calibration-factor', (req, res) => {
-  const factor = req.body.calibrationFactor;
-  if (factor !== undefined) {
+  if (req.body.calibrationFactor !== undefined) {
+    const calibrationFactor = parseFloat(req.body.calibrationFactor);
     // Update the calibration factor
-    router.db.set('calibrationFactor.value', factor).write();
-    res.jsonp({
-      message: "Calibration factor updated successfully."
-    });
+    router.db.set('calibrationFactor.value', calibrationFactor).write();
+    res.send("Calibration factor updated successfully.");
   } else {
-    res.status(400).jsonp({
-      error: "Missing calibrationFactor parameter."
-    });
+    res.status(400).send("Missing calibrationFactor parameter.");
   }
 });
 
@@ -103,6 +127,29 @@ server.get('/api/calibration-factor', (req, res) => {
   res.jsonp({
     calibrationFactor
   });
+});
+
+// GET /api/selected-record
+server.get('/api/selected-record', (req, res) => {
+  const selectedRecord = router.db.get('selectedRecord').value();
+  res.jsonp(selectedRecord);
+});
+
+// POST /api/selected-record
+server.post('/api/selected-record', (req, res) => {
+  const {
+    id
+  } = req.body;
+  if (id !== undefined) {
+    router.db.set('selectedRecord.id', id).write();
+    res.jsonp({
+      message: 'Selected record ID updated successfully.'
+    });
+  } else {
+    res.status(400).jsonp({
+      error: 'Missing ID parameter.'
+    });
+  }
 });
 
 // GET /api/calibration-records
@@ -219,17 +266,75 @@ server.get('/api/calibration/stop', (req, res) => {
   });
 });
 
-server.get('/api/firmware-version', (req, res) => {
+server.get('/api/calibration/reset', (req, res) => {
+  pulseCount = 0;
+  sendPulseCount();
+  console.log('Calibration reset.');
   res.jsonp({
-    message: "Update check initiated."
+    message: "Calibration pulse counter reset.",
+    pulseCount: pulseCount
+  });
+});
+
+server.get('/api/firmware-version', (req, res) => {
+  // Trigger the firmware update check
+  clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({
+        type: 'checkForUpdate'
+      }));
+    }
+  });
+
+  res.jsonp({
+    message: "Update check initiated.",
+    currentVersion: router.db.get('firmware').value().currentVersion
   });
 });
 
 server.post('/api/firmware-update', (req, res) => {
+  // Simulate the OTA update process
+  clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      const messages = [{
+          type: 'status',
+          message: 'Starting OTA update...'
+        },
+        {
+          type: 'progress',
+          percentage: 25
+        },
+        {
+          type: 'progress',
+          percentage: 50
+        },
+        {
+          type: 'progress',
+          percentage: 75
+        },
+        {
+          type: 'progress',
+          percentage: 100
+        },
+        {
+          type: 'updateCompleted',
+          newVersion: '1.1.0'
+        },
+      ];
+
+      messages.forEach((msg, index) => {
+        setTimeout(() => {
+          client.send(JSON.stringify(msg));
+        }, index * 1000);
+      });
+    }
+  });
+
   res.jsonp({
     message: "Attempting to perform OTA update..."
   });
 });
+
 
 server.use(router); // Use the router
 
