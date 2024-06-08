@@ -7,6 +7,7 @@ import MainLayout from "layouts/MainLayout";
 import CalibrationPage from "pages/calibration/CalibrationPage"
 import FirmwarePage from "components/pages/firmware/FirmwarePage";
 import AboutPage from "components/pages/AboutPage";
+import TestPage from "components/pages/test/TestPage";
 
 import WebSocketService from "./services/WebSocketService";
 
@@ -30,6 +31,11 @@ m.route(document.body, "/", {
   "/about": {
     render: function () {
       return m(MainLayout, m(AboutPage));
+    }
+  },
+  "/test": {
+    render: function () {
+      return m(MainLayout, m(TestPage));
     }
   }
 });
