@@ -8,6 +8,7 @@ import WebSocket, {
 
 // Settings
 const WEB_APP_URL = 'http://localhost:8080';
+const API_PREFIX = '/api/v1';
 const API_SERVER_PORT = 3000;
 const WEBSOCKET_SERVER_PORT = 8085;
 const PULSE_COUNT_UPDATE_INTERVAL = 100; // in milliseconds
@@ -111,7 +112,7 @@ server.use((req, res, next) => {
 // Middleware to parse JSON bodies - This needs to come before your routes
 server.use(jsonServer.bodyParser);
 
-server.post('/api/calibration-factor', (req, res) => {
+server.post(`/${API_PREFIX}/calibration-factor`, (req, res) => {
   if (req.body.calibrationFactor !== undefined) {
     const calibrationFactor = parseFloat(req.body.calibrationFactor);
     // Update the calibration factor
@@ -122,7 +123,7 @@ server.post('/api/calibration-factor', (req, res) => {
   }
 });
 
-server.get('/api/calibration-factor', (req, res) => {
+server.get(`${API_PREFIX}/calibration-factor`, (req, res) => {
   const calibrationFactor = router.db.get('calibrationFactor.value').value();
   res.jsonp({
     calibrationFactor
@@ -130,13 +131,13 @@ server.get('/api/calibration-factor', (req, res) => {
 });
 
 // GET /api/selected-record
-server.get('/api/selected-record', (req, res) => {
+server.get(`${API_PREFIX}/selected-record`, (req, res) => {
   const selectedRecord = router.db.get('selectedRecord').value();
   res.jsonp(selectedRecord);
 });
 
 // POST /api/selected-record
-server.post('/api/selected-record', (req, res) => {
+server.post(`${API_PREFIX}/selected-record`, (req, res) => {
   const {
     id
   } = req.body;
@@ -153,13 +154,13 @@ server.post('/api/selected-record', (req, res) => {
 });
 
 // GET /api/calibration-records
-server.get('/api/calibration-records', (req, res) => {
+server.get(`${API_PREFIX}/calibration-records`, (req, res) => {
   const records = router.db.get('calibrationRecords').value();
-  res.jsonp(records);
+  res.json(records);
 });
 
 // GET /api/calibration-records/:id
-server.get('/api/calibration-records/:id', (req, res) => {
+server.get(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
   const id = parseInt(req.params.id, 10);
   const record = router.db.get('calibrationRecords').find({
     id
@@ -175,7 +176,7 @@ server.get('/api/calibration-records/:id', (req, res) => {
 });
 
 // POST /api/calibration-records
-server.post('/api/calibration-records', (req, res) => {
+server.post(`${API_PREFIX}/calibration-records`, (req, res) => {
   const {
     targetVolume,
     observedVolume,
@@ -201,7 +202,7 @@ server.post('/api/calibration-records', (req, res) => {
 });
 
 // PUT /api/calibration-records/:id
-server.put('/api/calibration-records/:id', (req, res) => {
+server.put(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
   const id = parseInt(req.params.id, 10);
   const {
     targetVolume,
@@ -229,7 +230,7 @@ server.put('/api/calibration-records/:id', (req, res) => {
 });
 
 // DELETE /api/calibration-records/:id
-server.delete('/api/calibration-records/:id', (req, res) => {
+server.delete(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
   const id = parseInt(req.params.id, 10);
   const record = router.db.get('calibrationRecords').find({
     id
@@ -248,7 +249,7 @@ server.delete('/api/calibration-records/:id', (req, res) => {
 });
 
 // Route to start pulse count simulation
-server.get('/api/calibration/start', (req, res) => {
+server.get(`${API_PREFIX}/calibration/start`, (req, res) => {
   startPulseCountSimulation();
   console.log('Calibration started.');
   res.jsonp({
@@ -257,7 +258,7 @@ server.get('/api/calibration/start', (req, res) => {
 });
 
 // Route to stop pulse count simulation
-server.get('/api/calibration/stop', (req, res) => {
+server.get(`${API_PREFIX}/calibration/stop`, (req, res) => {
   stopPulseCountSimulation();
   console.log('Calibration stopped.');
   res.jsonp({
@@ -266,7 +267,7 @@ server.get('/api/calibration/stop', (req, res) => {
   });
 });
 
-server.get('/api/calibration/reset', (req, res) => {
+server.get(`${API_PREFIX}/calibration/reset`, (req, res) => {
   pulseCount = 0;
   sendPulseCount();
   console.log('Calibration reset.');
@@ -276,7 +277,7 @@ server.get('/api/calibration/reset', (req, res) => {
   });
 });
 
-server.get('/api/firmware-version', (req, res) => {
+server.get(`${API_PREFIX}/firmware-version`, (req, res) => {
   // Trigger the firmware update check
   clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
@@ -292,7 +293,7 @@ server.get('/api/firmware-version', (req, res) => {
   });
 });
 
-server.post('/api/firmware-update', (req, res) => {
+server.post(`${API_PREFIX}/firmware-update`, (req, res) => {
   // Simulate the OTA update process
   clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
@@ -334,7 +335,6 @@ server.post('/api/firmware-update', (req, res) => {
     message: "Attempting to perform OTA update..."
   });
 });
-
 
 server.use(router); // Use the router
 
