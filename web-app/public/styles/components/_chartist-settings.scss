@@ -1,0 +1,21 @@
+$ct-grid-color: rgba(white, 0.2);
+$ct-text-color: rgba(white, 0.4);
+
+.ct-chart svg {
+  overflow: visible;
+}
+
+.ct-axis-title {
+  stroke: rgba(255, 255, 255, 0.4);
+}
+
+@import '~chartist/dist/index.scss';
+
+.ct-axis-title {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  fill: rgba(255, 255, 255, 0.4);
+  stroke: none;
+  text-anchor: middle;
+}
