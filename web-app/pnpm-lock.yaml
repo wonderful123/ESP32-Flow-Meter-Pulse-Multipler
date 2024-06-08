@@ -11,6 +11,9 @@ importers:
       chartist:
         specifier: ^1.3.0
         version: 1.3.0
+      chartist-plugin-axistitle:
+        specifier: ^0.0.7
+        version: 0.0.7
       mithril:
         specifier: ^2.2.2
         version: 2.2.2
@@ -1098,6 +1101,10 @@ packages:
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
+
+  chartist-plugin-axistitle@0.0.7:
+    resolution: {integrity: sha512-qFG7R/qiZZyCn/gx9WJpMcnyhE0LIpGBxDnPpYtzY5cG53fHBkvJDsAEHEFFfO1l/RHI0G8oN9fpoUD/BMeiFA==}
+    engines: {node: '>=0.8.0'}
 
   chartist@1.3.0:
     resolution: {integrity: sha512-M3ckI3ua7EHt08WLZvdi3QXn5g+in27qU6TxjI5bpriS6QwIZlWtisyUhFbpGclW546SlT3SL9oq0vFFDiAo6g==}
@@ -4273,6 +4280,8 @@ snapshots:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
+
+  chartist-plugin-axistitle@0.0.7: {}
 
   chartist@1.3.0: {}
 
