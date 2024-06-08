@@ -1,59 +1,68 @@
 {
-  "calibrationFactor": {
-    "value": 0.975
-  },
   "calibrationRecords": [{
+      "id": 1,
+      "oilTemperature": 25.5,
+      "pulseCount": 8500,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.42
+    },
+    {
       "id": 2,
-      "targetVolume": 200,
-      "observedVolume": 195,
-      "pulseCount": 2400
+      "oilTemperature": 30.2,
+      "pulseCount": 8600,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.48
     },
     {
       "id": 3,
-      "targetVolume": 150,
-      "observedVolume": 148,
-      "pulseCount": 1500
+      "oilTemperature": 40.8,
+      "pulseCount": 8800,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.53
+    },
+    {
+      "id": 4,
+      "oilTemperature": 50.1,
+      "pulseCount": 9000,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.57
     },
     {
       "id": 5,
-      "targetVolume": 300,
-      "observedVolume": 295,
-      "pulseCount": 3600
+      "oilTemperature": 60.6,
+      "pulseCount": 9200,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.61
     },
     {
       "id": 6,
-      "targetVolume": 50,
-      "observedVolume": 49,
-      "pulseCount": 500
+      "oilTemperature": 70.3,
+      "pulseCount": 9400,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.64
     },
     {
       "id": 7,
-      "targetVolume": 400,
-      "observedVolume": 395,
-      "pulseCount": 4800
+      "oilTemperature": 80.9,
+      "pulseCount": 9600,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.68
     },
     {
       "id": 8,
-      "targetVolume": 500,
-      "observedVolume": 490,
-      "pulseCount": 6000
+      "oilTemperature": 90.2,
+      "pulseCount": 9800,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.72
     },
     {
       "id": 9,
-      "targetVolume": 600,
-      "observedVolume": 590,
-      "pulseCount": 7200
-    },
-    {
-      "id": 10,
-      "targetVolume": 700,
-      "observedVolume": 685,
-      "pulseCount": 8400
+      "oilTemperature": 95.7,
+      "pulseCount": 10000,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.75
     }
   ],
-  "selectedRecord": {
-    "id": 2
-  },
   "firmware": {
     "currentVersion": "1.0.0"
   }
