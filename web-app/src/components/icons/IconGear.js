@@ -1,13 +1,12 @@
 // IconGear.js
 import m from "mithril";
+import BaseIcon from "./BaseIcon";
 
 const IconGear = {
   view: function (vnode) {
-    return m("svg", {
-      xmlns: "http://www.w3.org/2000/svg",
+    return m(BaseIcon, {
       viewBox: "0 0 504 504",
-      class: "icon" + (vnode.attrs.class || ""), // Ensuring any passed class is applied
-      style: vnode.attrs.style, // Applying any passed style
+      ...vnode.attrs
     }, [
       m("circle", {
         style: {
