@@ -54,7 +54,10 @@ const Navbar = {
       }, 'Firmware'),
       m('a.navbar-item', {
         href: '#/about'
-      }, 'About')
+      }, 'About'),
+      m('a.navbar-item', {
+        href: '#/test'
+      }, 'Test')
     ];
   },
   view: function () {
