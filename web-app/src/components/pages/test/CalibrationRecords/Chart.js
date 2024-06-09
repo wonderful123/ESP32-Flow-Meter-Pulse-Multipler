@@ -1,34 +1,32 @@
 // Chart.js
-import m from 'mithril';
+import m from "mithril";
 import ChartComponent from "components/common/ChartComponent";
-import CalibrationService from '../../../../services/CalibrationService';
-import {
-  AutoScaleAxis
-} from "chartist";
+import CalibrationService from "../../../../services/CalibrationService";
+import { AutoScaleAxis } from "chartist";
 
-const X_AXIS_TITLE = 'Temperature (°C)';
-const Y_AXIS_TITLE = 'Calibration Factor (%)';
+const X_AXIS_TITLE = "Temperature (°C)";
+const Y_AXIS_TITLE = "Calibration Factor (%)";
 
 const options = {
   axisX: {
     type: AutoScaleAxis,
     onlyInteger: true,
-    title: X_AXIS_TITLE
+    title: X_AXIS_TITLE,
   },
   axisY: {
     onlyInteger: true,
-    title: Y_AXIS_TITLE
-  }
+    title: Y_AXIS_TITLE,
+  },
 };
 
 function getCalibrationFactor(targetOilVolume, observedOilVolume) {
-  return observedOilVolume / targetOilVolume * 100;
+  return (observedOilVolume / targetOilVolume) * 100;
 }
 
 function buildChartData(records) {
   if (records.length === 0) {
     return {
-      series: []
+      series: [],
     };
   }
 
@@ -37,10 +35,10 @@ function buildChartData(records) {
       records.map(record => {
         return {
           x: record.oilTemperature,
-          y: getCalibrationFactor(record.targetOilVolume, record.observedOilVolume)
-        }
-      })
-    ]
+          y: getCalibrationFactor(record.targetOilVolume, record.observedOilVolume),
+        };
+      }),
+    ],
   };
 
   return chartData;
@@ -48,7 +46,8 @@ function buildChartData(records) {
 
 const Chart = {
   oninit: function (vnode) {
-    vnode.state.chartData = [];
+    vnode.state.chartData = null;
+    vnode.state.error = null;
   },
 
   oncreate: function (vnode) {
@@ -58,19 +57,50 @@ const Chart = {
         m.redraw();
       })
       .catch(error => {
-        console.error('Error fetching calibration records:', error);
+        vnode.state.error = "Error fetching calibration records. Please try again.";
+        m.redraw();
       });
   },
 
   view: function (vnode) {
+    if (vnode.state.error) {
+      return m("div.error", vnode.state.error);
+    }
+
+    if (vnode.state.chartData === null) {
+      return m(ChartComponent, {
+        type: "line",
+        data: {
+          series: [],
+        },
+        options: {
+          ...options,
+          showLine: false,
+          showPoint: false,
+          showArea: false,
+          axisX: {
+            showGrid: false,
+            showLabel: false,
+          },
+          axisY: {
+            showGrid: false,
+            showLabel: false,
+          },
+        },
+        xAxisTitle: "",
+        yAxisTitle: "",
+        placeholderText: "Loading chart data...",
+      });
+    }
+
     return m(ChartComponent, {
       type: "line",
       data: vnode.state.chartData,
       options: options,
       xAxisTitle: X_AXIS_TITLE,
-      yAxisTitle: Y_AXIS_TITLE
+      yAxisTitle: Y_AXIS_TITLE,
     });
-  }
-}
+  },
+};
 
 export default Chart;
