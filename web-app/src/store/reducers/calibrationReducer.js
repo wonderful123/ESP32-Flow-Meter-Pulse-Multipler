@@ -15,7 +15,7 @@ import {
   DELETE_CALIBRATION_RECORD_REQUEST,
   DELETE_CALIBRATION_RECORD_SUCCESS,
   DELETE_CALIBRATION_RECORD_FAILURE,
-} from '../actions/calibrationActions';
+} from "../actions/calibrationActions";
 
 const initialState = {
   calibrating: false,
@@ -27,12 +27,34 @@ const initialState = {
     targetOilVolume: 0,
     observedOilVolume: 0,
   },
-  calibrationRecord: null,
+  records: [],
+  loading: false,
   error: null,
 };
 
 const calibrationReducer = (state = initialState, action) => {
   switch (action.type) {
+    case START_CALIBRATION:
+      return {
+        ...state,
+        calibrating: true,
+      };
+    case STOP_CALIBRATION:
+      return {
+        ...state,
+        calibrating: false,
+        calibrationData: {
+          ...state.calibrationData,
+          endPulseCount: action.payload.pulseCount,
+          endTemperature: action.payload.temperature,
+        },
+      };
+    case RESET_CALIBRATION:
+      return {
+        ...state,
+        calibrating: false,
+        calibrationData: initialState.calibrationData,
+      };
     case FETCH_CALIBRATION_RECORDS_REQUEST:
     case CREATE_CALIBRATION_RECORD_REQUEST:
     case UPDATE_CALIBRATION_RECORD_REQUEST:
@@ -40,37 +62,35 @@ const calibrationReducer = (state = initialState, action) => {
       return {
         ...state,
         loading: true,
-          error: null,
+        error: null,
       };
     case FETCH_CALIBRATION_RECORDS_SUCCESS:
       return {
         ...state,
         records: action.payload,
-          loading: false,
-          error: null,
+        loading: false,
+        error: null,
       };
     case CREATE_CALIBRATION_RECORD_SUCCESS:
       return {
         ...state,
         records: [...state.records, action.payload],
-          loading: false,
-          error: null,
+        loading: false,
+        error: null,
       };
     case UPDATE_CALIBRATION_RECORD_SUCCESS:
       return {
         ...state,
-        records: state.records.map(record =>
-            record.id === action.payload.id ? action.payload : record
-          ),
-          loading: false,
-          error: null,
+        records: state.records.map(record => (record.id === action.payload.id ? action.payload : record)),
+        loading: false,
+        error: null,
       };
     case DELETE_CALIBRATION_RECORD_SUCCESS:
       return {
         ...state,
         records: state.records.filter(record => record.id !== action.payload),
-          loading: false,
-          error: null,
+        loading: false,
+        error: null,
       };
     case FETCH_CALIBRATION_RECORDS_FAILURE:
     case CREATE_CALIBRATION_RECORD_FAILURE:
@@ -79,7 +99,7 @@ const calibrationReducer = (state = initialState, action) => {
       return {
         ...state,
         loading: false,
-          error: action.payload,
+        error: action.payload,
       };
     default:
       return state;
