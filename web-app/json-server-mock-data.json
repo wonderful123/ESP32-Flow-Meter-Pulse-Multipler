@@ -1,5 +1,6 @@
 {
-  "calibrationRecords": [{
+  "calibrationRecords": [
+    {
       "id": 1,
       "oilTemperature": 25.5,
       "pulseCount": 8500,
