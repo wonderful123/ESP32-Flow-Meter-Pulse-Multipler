@@ -59,15 +59,15 @@ const TableRow = {
       m("td", calibrationFactor(record.targetOilVolume, record.observedOilVolume)),
       m("td", record.timestamp),
       m("td.actions", [
+        m(EditActions, {
+          isEditing,
+          onEdit: onStartEditing,
+        }),
         !isEditing &&
           m(DeleteAction, {
             record,
             onDelete,
           }),
-        m(EditActions, {
-          isEditing,
-          onEdit: onStartEditing,
-        }),
       ]),
     ]);
   },
