@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --env mode=production --profile --color",
-    "watch-sass": "sass --watch --load-path=node_modules public/main.scss ../data/bulma.css",
+    "watch-sass": "sass --watch --load-path=node_modules ./public/main.scss ../data/bulma.css",
     "start-mock": "node json-server-mock.mjs",
     "start-webpack-development-server": "webpack serve --env mode=development --profile --color",
     "start": "concurrently \"pnpm run watch-sass\" \"pnpm run start-mock\" \"pnpm run start-webpack-development-server\"",
