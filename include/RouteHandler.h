@@ -24,10 +24,6 @@ class RouteHandler {
   WebServerManager& _webServerManager;
 
   // Declaration of route handling methods
-  void getCalibrationFactor(AsyncWebServerRequest* request);
-  void setCalibrationFactor(AsyncWebServerRequest* request);
-  void getSelectedRecordId(AsyncWebServerRequest* request);
-  void setSelectedRecordId(AsyncWebServerRequest* request);
   void getCalibrationRecords(AsyncWebServerRequest* request);
   void getCalibrationRecord(AsyncWebServerRequest* request);
   void addCalibrationRecord(AsyncWebServerRequest* request);

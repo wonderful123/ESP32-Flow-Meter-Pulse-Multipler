@@ -17,24 +17,6 @@ RouteHandler::RouteHandler(CalibrationManager& calibrationManager,
       _webServerManager(webServerManager) {}
 
 void RouteHandler::registerRoutes(AsyncWebServer& server) {
-  server.on("/api/calibration-factor", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->getCalibrationFactor(request);
-            });
-  server.on("/api/calibration-factor", HTTP_POST,
-            [this](AsyncWebServerRequest* request) {
-              this->setCalibrationFactor(request);
-            });
-
-  server.on("/api/selected-record", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->getSelectedRecordId(request);
-            });
-  server.on("/api/selected-record", HTTP_POST,
-            [this](AsyncWebServerRequest* request) {
-              this->setSelectedRecordId(request);
-            });
-
   server.on("/api/calibration-records", HTTP_GET,
             [this](AsyncWebServerRequest* request) {
               this->getCalibrationRecords(request);
@@ -93,47 +75,6 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
   LOG_INFO("Routes registered");
 }
 
-void RouteHandler::getCalibrationFactor(AsyncWebServerRequest* request) {
-  float calibrationFactor = _calibrationManager.getCalibrationFactor();
-  char buffer[128];
-  snprintf(buffer, sizeof(buffer), "{\"calibrationFactor\": %g}",
-           calibrationFactor);
-  request->send(200, "application/json", buffer);
-}
-
-void RouteHandler::setCalibrationFactor(AsyncWebServerRequest* request) {
-  if (request->hasArg("calibrationFactor")) {
-    float calibrationFactor = request->arg("calibrationFactor").toFloat();
-    _calibrationManager.updateCalibrationFactor(calibrationFactor);
-    request->send(200, "text/plain",
-                  "Calibration factor updated successfully.");
-  } else {
-    request->send(400, "text/plain", "Missing CalibrationFactor parameter.");
-  }
-}
-
-void RouteHandler::getSelectedRecordId(AsyncWebServerRequest* request) {
-  size_t selectedRecordId = _calibrationManager.getSelectedRecordId();
-  String response = "{\"id\":" + String(selectedRecordId) + "}";
-  request->send(200, "application/json", response);
-}
-
-void RouteHandler::setSelectedRecordId(AsyncWebServerRequest* request) {
-  if (request->hasArg("id")) {
-    int id = request->arg("id").toInt();
-    if (id >= 0) {
-      _calibrationManager.setSelectedRecordId(id);
-    } else {
-      _calibrationManager.setSelectedRecordId(-1);  // Unset the selected record
-    }
-    request->send(200, "application/json",
-                  "{\"message\":\"Selected record ID updated successfully.\"}");
-  } else {
-    request->send(400, "application/json",
-                  "{\"error\":\"Missing ID parameter.\"}");
-  }
-}
-
 void RouteHandler::getCalibrationRecords(AsyncWebServerRequest* request) {
   LOG_INFO("Fetching calibration records...");
   String json = _calibrationManager.getCalibrationRecordsJson();
@@ -154,35 +95,47 @@ void RouteHandler::getCalibrationRecord(AsyncWebServerRequest* request) {
 void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
   // Log the request args
   LOG_INFO("Adding calibration record...");
-  LOG_INFO("Target volume: {}", request->arg("targetVolume"));
-  LOG_INFO("Observed volume: {}", request->arg("observedVolume"));
+  LOG_INFO("Oil temperature: {}", request->arg("oilTemperature"));
   LOG_INFO("Pulse count: {}", request->arg("pulseCount"));
-  if (request->hasParam("targetVolume") &&
-      request->hasParam("observedVolume") && request->hasParam("pulseCount")) {
-    float targetVolume = request->getParam("targetVolume")->value().toFloat();
-    float observedVolume =
-        request->getParam("observedVolume")->value().toFloat();
-    unsigned long pulseCount = request->getParam("pulseCount")->value().toInt();
-    unsigned long epochTime =
-        _webServerManager.getEpochTimeManager().getEpochTime();
-    float oilTemp = 0.0f;             // TODO: Get oil temperature from sensor
-    const char* oilType = "unknown";  // TODO: Get oil type from user input
+  LOG_INFO("Target oil volume: {}", request->arg("targetOilVolume"));
+  LOG_INFO("Observed oil volume: {}", request->arg("observedOilVolume"));
+  LOG_INFO("Timestamp: {}", request->arg("timestamp"));
 
-    _calibrationManager.addCalibrationRecord(
-        targetVolume, observedVolume, pulseCount, epochTime, oilTemp, oilType);
+  if (request->hasParam("oilTemperature") && request->hasParam("pulseCount") &&
+      request->hasParam("targetOilVolume") &&
+      request->hasParam("observedOilVolume") &&
+      request->hasParam("timestamp")) {
+    float oilTemperature =
+        request->getParam("oilTemperature")->value().toFloat();
+    unsigned long pulseCount = request->getParam("pulseCount")->value().toInt();
+    float targetOilVolume =
+        request->getParam("targetOilVolume")->value().toFloat();
+    float observedOilVolume =
+        request->getParam("observedOilVolume")->value().toFloat();
+    unsigned long timestamp = request->getParam("timestamp")->value().toInt();
+
+    _calibrationManager.addCalibrationRecord(oilTemperature, pulseCount,
+                                             targetOilVolume, observedOilVolume,
+                                             timestamp);
     request->send(200, "application/json",
                   "{\"message\":\"Calibration record added successfully.\"}");
   } else {
     // Collect missing fields
     String missingFields = "";
-    if (!request->hasParam("targetVolume")) {
-      missingFields += "targetVolume ";
-    }
-    if (!request->hasParam("observedVolume")) {
-      missingFields += "observedVolume ";
+    if (!request->hasParam("oilTemperature")) {
+      missingFields += "oilTemperature ";
     }
     if (!request->hasParam("pulseCount")) {
       missingFields += "pulseCount ";
+    }
+    if (!request->hasParam("targetOilVolume")) {
+      missingFields += "targetOilVolume ";
+    }
+    if (!request->hasParam("observedOilVolume")) {
+      missingFields += "observedOilVolume ";
+    }
+    if (!request->hasParam("timestamp")) {
+      missingFields += "timestamp ";
     }
     request->send(400, "application/json",
                   "{\"error\":\"Missing fields: " + missingFields + "\"}");
@@ -194,16 +147,23 @@ void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
 void RouteHandler::editCalibrationRecord(AsyncWebServerRequest* request) {
   LOG_INFO("Handling edit request");
 
-  if (request->hasParam("id") && request->hasParam("targetVolume") &&
-      request->hasParam("observedVolume") && request->hasParam("pulseCount")) {
+  if (request->hasParam("id") && request->hasParam("oilTemperature") &&
+      request->hasParam("pulseCount") && request->hasParam("targetOilVolume") &&
+      request->hasParam("observedOilVolume") &&
+      request->hasParam("timestamp")) {
     int id = request->pathArg(0).toInt();
-    float targetVolume = request->getParam("targetVolume")->value().toFloat();
-    float observedVolume =
-        request->getParam("observedVolume")->value().toFloat();
+    float oilTemperature =
+        request->getParam("oilTemperature")->value().toFloat();
     unsigned long pulseCount = request->getParam("pulseCount")->value().toInt();
+    float targetOilVolume =
+        request->getParam("targetOilVolume")->value().toFloat();
+    float observedOilVolume =
+        request->getParam("observedOilVolume")->value().toFloat();
+    unsigned long timestamp = request->getParam("timestamp")->value().toInt();
 
-    _calibrationManager.updateCalibrationRecord(id, targetVolume,
-                                                observedVolume, pulseCount);
+    _calibrationManager.updateCalibrationRecord(id, oilTemperature, pulseCount,
+                                                targetOilVolume,
+                                                observedOilVolume, timestamp);
     LOG_INFO("Calibration record updated successfully");
     request->send(200, "application/json",
                   "{\"message\":\"Calibration record updated successfully.\"}");

@@ -9,61 +9,19 @@ CalibrationManager::CalibrationManager(size_t maxRecords)
 void CalibrationManager::begin() {
   _eepromManager.begin();
   _eepromManager.loadCalibrationRecords(_calibrationHistory);
-  _eepromManager.loadSelectedRecordId(_selectedRecordId);
 }
 
-void CalibrationManager::setSelectedRecordId(size_t id) {
-  _selectedRecordId = id;
-  _eepromManager.saveSelectedRecordId(id);
-
-  if (id == -1) {
-    // Unset the selected record and revert to the default setting
-    updateCalibrationFactor(DEFAULT_CALIBRATION_FACTOR);
-  } else {
-    // Set the calibration factor based on the selected record
-    CalibrationRecord record;
-    if (findRecordById(id, record)) {
-      updateCalibrationFactor(record.calibrationFactor);
-    }
-  }
-}
-
-size_t CalibrationManager::getSelectedRecordId() const {
-  return _selectedRecordId;
-}
-
-void CalibrationManager::registerCalibrationFactorUpdateCallback(
-    std::function<void(float)> callback) {
-  _calibrationFactorUpdateCallback = callback;
-}
-
-void CalibrationManager::updateCalibrationFactor(float calibrationFactor) {
-  _eepromManager.saveCalibrationFactor(calibrationFactor);
-  if (_calibrationFactorUpdateCallback) {
-    _calibrationFactorUpdateCallback(calibrationFactor);
-  }
-}
-
-float CalibrationManager::getCalibrationFactor() const {
-  float calibrationFactor = DEFAULT_CALIBRATION_FACTOR;
-  _eepromManager.loadCalibrationFactor(calibrationFactor);
-  return calibrationFactor;
-}
-
-void CalibrationManager::addCalibrationRecord(
-    float targetVolume, float observedVolume, unsigned long pulseCount,
-    unsigned long epochTime, float oilTemp, const char* oilType) {
+void CalibrationManager::addCalibrationRecord(float oilTemperature,
+                                              unsigned long pulseCount,
+                                              float targetOilVolume,
+                                              float observedOilVolume,
+                                              unsigned long timestamp) {
   CalibrationRecord newRecord;
-  newRecord.targetVolume = targetVolume;
-  newRecord.observedVolume = observedVolume;
+  newRecord.oilTemperature = oilTemperature;
   newRecord.pulseCount = pulseCount;
-  newRecord.oilTemp = oilTemp;
-  strncpy(newRecord.oilType, oilType, sizeof(newRecord.oilType) - 1);
-  newRecord.oilType[sizeof(newRecord.oilType) - 1] =
-      '\0';  // Ensure null-termination
-  newRecord.epochTime = epochTime;
-  newRecord.calibrationFactor =
-      calculateCalibrationFactor(targetVolume, observedVolume);
+  newRecord.targetOilVolume = targetOilVolume;
+  newRecord.observedOilVolume = observedOilVolume;
+  newRecord.timestamp = timestamp;
 
   _calibrationHistory.push_back(newRecord);
   updateCalibrationHistory();  // Reflect the changes in EEPROM
@@ -74,19 +32,17 @@ void CalibrationManager::updateCalibrationHistory() {
 }
 
 String CalibrationManager::getCalibrationRecordsJson() const {
-  JsonDocument doc;
+  DynamicJsonDocument doc(1024);
   JsonArray array = doc.to<JsonArray>();
 
   for (const auto& record : _calibrationHistory) {
-    JsonObject obj = array.add<JsonObject>();
+    JsonObject obj = array.createNestedObject();
     obj["id"] = &record - &_calibrationHistory[0];  // Calculate index
-    obj["targetVolume"] = record.targetVolume;
-    obj["observedVolume"] = record.observedVolume;
+    obj["oilTemperature"] = record.oilTemperature;
     obj["pulseCount"] = record.pulseCount;
-    obj["oilTemp"] = record.oilTemp;
-    obj["oilType"] = record.oilType;
-    obj["epochTime"] = record.epochTime;
-    obj["calibrationFactor"] = record.calibrationFactor;
+    obj["targetOilVolume"] = record.targetOilVolume;
+    obj["observedOilVolume"] = record.observedOilVolume;
+    obj["timestamp"] = record.timestamp;
   }
 
   String json;
@@ -94,16 +50,16 @@ String CalibrationManager::getCalibrationRecordsJson() const {
   return json;
 }
 
-void CalibrationManager::updateCalibrationRecord(size_t id, float targetVolume,
-                                                 float observedVolume,
-                                                 unsigned long pulseCount) {
+void CalibrationManager::updateCalibrationRecord(
+    size_t id, float oilTemperature, unsigned long pulseCount,
+    float targetOilVolume, float observedOilVolume, unsigned long timestamp) {
   if (id < _calibrationHistory.size()) {
     CalibrationRecord& record = _calibrationHistory[id];
-    record.targetVolume = targetVolume;
-    record.observedVolume = observedVolume;
+    record.oilTemperature = oilTemperature;
     record.pulseCount = pulseCount;
-    record.calibrationFactor =
-        calculateCalibrationFactor(targetVolume, observedVolume);
+    record.targetOilVolume = targetOilVolume;
+    record.observedOilVolume = observedOilVolume;
+    record.timestamp = timestamp;
 
     updateCalibrationHistory();  // Persist changes to EEPROM
   }
@@ -127,13 +83,14 @@ String CalibrationManager::getCalibrationRecordJson(size_t id) const {
   }
 
   const auto& record = _calibrationHistory[id];
-  JsonDocument doc;
+  DynamicJsonDocument doc(256);
 
   doc["id"] = id;
-  doc["targetVolume"] = record.targetVolume;
-  doc["observedVolume"] = record.observedVolume;
+  doc["oilTemperature"] = record.oilTemperature;
   doc["pulseCount"] = record.pulseCount;
-  // Include other fields as needed
+  doc["targetOilVolume"] = record.targetOilVolume;
+  doc["observedOilVolume"] = record.observedOilVolume;
+  doc["timestamp"] = record.timestamp;
 
   String json;
   serializeJson(doc, json);
@@ -147,12 +104,4 @@ bool CalibrationManager::findRecordById(size_t id,
     return true;
   }
   return false;
-}
-
-float CalibrationManager::calculateCalibrationFactor(
-    float targetVolume, float observedVolume) const {
-  if (observedVolume == 0)
-    return 0;  // Avoid division by zero or return a default value
-
-  return targetVolume / observedVolume;
 }

@@ -4,7 +4,6 @@
 #include <ESPAsyncWebServer.h>
 
 #include "CalibrationManager.h"
-#include "EpochTimeManager.h"
 #include "FileSystemManager.h"
 #include "OTAUpdater.h"
 #include "PulseCounter.h"
@@ -19,7 +18,6 @@ class WebServerManager {
   void begin();
   void update();
   void broadcastWebsocketMessage(String& type, String& message);
-  EpochTimeManager& getEpochTimeManager();
 
  private:
   CalibrationManager& _calibrationManager;
@@ -30,7 +28,6 @@ class WebServerManager {
   WebSocketServer _webSocketServer;
   OTAUpdater _otaUpdater;
   FileSystemManager _fsManager;
-  EpochTimeManager _epochTimeManager;
 
   void startMDNS();
 };
