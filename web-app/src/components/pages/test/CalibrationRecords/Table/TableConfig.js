@@ -1,5 +1,5 @@
 // CalibrationRecords/Table/TableConfig.js
-export const TableConfig = {
+const TableConfig = {
   columns: [
     {
       key: "oilTemperature",
@@ -40,3 +40,5 @@ export const TableConfig = {
   defaultSortColumn: "oilTemperature",
   defaultSortOrder: "asc",
 };
+
+export default TableConfig;
