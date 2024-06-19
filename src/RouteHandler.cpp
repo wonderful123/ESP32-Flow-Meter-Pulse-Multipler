@@ -151,7 +151,7 @@ void RouteHandler::editCalibrationRecord(AsyncWebServerRequest* request) {
       request->hasParam("pulseCount") && request->hasParam("targetOilVolume") &&
       request->hasParam("observedOilVolume") &&
       request->hasParam("timestamp")) {
-    int id = request->pathArg(0).toInt();
+    int id = request->getParam("id")->value().toInt();
     float oilTemperature =
         request->getParam("oilTemperature")->value().toFloat();
     unsigned long pulseCount = request->getParam("pulseCount")->value().toInt();
@@ -177,8 +177,8 @@ void RouteHandler::editCalibrationRecord(AsyncWebServerRequest* request) {
 void RouteHandler::deleteCalibrationRecord(AsyncWebServerRequest* request) {
   LOG_INFO("Handling delete request");
 
-  if (request->hasArg("id")) {
-    int id = request->pathArg(0).toInt();
+  if (request->hasParam("id")) {
+    int id = request->getParam("id")->value().toInt();
     _calibrationManager.deleteCalibrationRecord(id);
     LOG_INFO("Calibration record deleted successfully");
     request->send(200, "application/json",
