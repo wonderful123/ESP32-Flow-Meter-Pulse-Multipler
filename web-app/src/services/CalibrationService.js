@@ -24,7 +24,9 @@ const CalibrationService = {
 
   updateCalibrationRecord: async (id, data) => {
     try {
-      const response = await APIService.put(`/calibration-records/${id}`, data);
+      let calibrationRecord = new CalibrationRecord(data);
+      calibrationRecord.body = data
+      const response = await APIService.put(`/calibration-records/${id}`, calibrationRecord);
       return response.data;
     } catch (error) {
       throw error;
