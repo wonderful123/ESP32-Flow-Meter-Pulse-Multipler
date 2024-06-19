@@ -101,7 +101,6 @@ function sendPulseCountUpdate() {
 
   pulseCount += Math.floor(Math.random() * 5); // Increment pulse count by a random value between 0 and 4
   sendPulseCount();
-  console.log(`[MOCK-SERVER][WEBSOCKET] Pulse count updated: ${pulseCount}`);
   setTimeout(sendPulseCountUpdate, PULSE_COUNT_UPDATE_INTERVAL);
 }
 
@@ -174,10 +173,6 @@ server.put(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
   const id = parseInt(req.params.id, 10);
   const { oilTemperature, targetOilVolume, observedOilVolume, pulseCount } = req.body;
   const record = router.db.get("calibrationRecords").find({ id }).value();
-
-  // Log the request data for diagnostics
-  console.log(`[MOCK-SERVER][API] Updating calibration record with ID: ${req.params.id}`);
-  console.log("[MOCK-SERVER][API] Request Body:", req.body);
 
   if (record) {
     if (oilTemperature !== undefined) record.oilTemperature = oilTemperature;
