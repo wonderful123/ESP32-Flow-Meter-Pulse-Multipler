@@ -1,24 +1,23 @@
-@use 'cyborg-theme/variables';
-
+@use "cyborg-theme/variables";
 
 // @use 'bulma/sass';
-@use 'bulma/sass/utilities';
-@use 'bulma/sass/base';
-@use 'bulma/sass';
-@use 'bulma/sass/components/message';
-@use 'bulma/sass/components/navbar';
-@use 'bulma/sass/components/modal';
-@use 'bulma/sass/elements/button';
-@use 'bulma/sass/elements/title';
-@use 'bulma/sass/elements/block';
-@use 'bulma/sass/elements/icon';
-@use 'bulma/sass/elements/content';
-@use 'bulma/sass/elements/notification';
-@use 'bulma/sass/elements/progress';
+@use "bulma/sass/utilities";
+@use "bulma/sass/base";
+@use "bulma/sass";
+@use "bulma/sass/components/message";
+@use "bulma/sass/components/navbar";
+@use "bulma/sass/components/modal";
+@use "bulma/sass/elements/button";
+@use "bulma/sass/elements/title";
+@use "bulma/sass/elements/block";
+@use "bulma/sass/elements/icon";
+@use "bulma/sass/elements/content";
+@use "bulma/sass/elements/notification";
+@use "bulma/sass/elements/progress";
 
-@use 'bulma/sass/themes';
+@use "bulma/sass/themes";
 
 // Custom styles
-@use 'base/custom-base';
-@use 'pages';
-@use 'components';
+@use "base/custom-base";
+@use "pages";
+@use "components";
