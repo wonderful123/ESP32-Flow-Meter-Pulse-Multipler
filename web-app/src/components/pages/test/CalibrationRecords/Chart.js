@@ -102,7 +102,7 @@ const Chart = {
       xAxisTitle: X_AXIS_TITLE,
       yAxisTitle: Y_AXIS_TITLE,
       lineSmooth: Interpolation.cardinal({
-        tension: 1,
+        tension: 0.5,
         fillHoles: false,
       }),
     });
