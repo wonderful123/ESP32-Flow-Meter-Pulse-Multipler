@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "Calibration/CalibrationRecord.h"
 #include "Settings.h"
 
 struct EEPROMHeader {
@@ -15,14 +16,6 @@ struct EEPROMHeader {
 
 static constexpr unsigned long EEPROM_EMPTY_MARKER = 0xFFFFFFFF;
 static constexpr size_t EEPROM_HEADER_SIZE = sizeof(EEPROMHeader);
-
-struct CalibrationRecord {
-  float oilTemperature;
-  unsigned long pulseCount;
-  float targetOilVolume;
-  float observedOilVolume;
-  unsigned long timestamp;
-};
 
 class EEPROMManager {
  public:
