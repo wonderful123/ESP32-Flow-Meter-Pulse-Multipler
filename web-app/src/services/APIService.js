@@ -27,7 +27,7 @@ const APIService = {
     const requestOptions = {
       method: method,
       url: url,
-      data: data,
+      body: data,
       params: params,
       headers: headers,
       ...options,
