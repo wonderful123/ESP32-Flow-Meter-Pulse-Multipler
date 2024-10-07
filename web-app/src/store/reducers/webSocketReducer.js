@@ -1,63 +1,75 @@
-// websocketReducer.js
-import {
-  WEBSOCKET_CONNECTED,
-  WEBSOCKET_DISCONNECTED,
-  WEBSOCKET_ERROR,
-  WEBSOCKET_MESSAGE_RECEIVED,
-  WEBSOCKET_MESSAGE_SENT,
-  CALIBRATION_MESSAGE_RECEIVED,
-  CONFIGURATION_MESSAGE_RECEIVED,
-  DIAGNOSTICS_MESSAGE_RECEIVED,
-} from '../actions/websocketActions';
+// webSocketReducer.js
 
+import {
+  WEBSOCKET_CONNECTION_OPEN,
+  WEBSOCKET_CONNECTION_CLOSE,
+  WEBSOCKET_CONNECTION_ERROR,
+  WEBSOCKET_MESSAGE_RECEIVED,
+} from "../actions/webSocketActions";
+
+// Initial State
 const initialState = {
-  connected: false,
-  error: null,
-  lastMessage: null,
+  isConnected: false,
   calibrationData: null,
   configurationData: null,
   diagnosticsData: null,
+  error: null,
 };
 
+// WebSocket Reducer
 const websocketReducer = (state = initialState, action) => {
   switch (action.type) {
-    case WEBSOCKET_CONNECTED:
+    case WEBSOCKET_CONNECTION_OPEN:
       return {
         ...state,
-        connected: true,
-          error: null,
+        isConnected: true,
+        error: null, // Clear any errors on successful connection
       };
-    case WEBSOCKET_DISCONNECTED:
+
+    case WEBSOCKET_CONNECTION_CLOSE:
       return {
         ...state,
-        connected: false,
+        isConnected: false,
       };
-    case WEBSOCKET_ERROR:
+
+    case WEBSOCKET_CONNECTION_ERROR:
       return {
         ...state,
-        error: action.payload,
+        isConnected: false,
+        error: action.payload, // Store the WebSocket error
       };
+
     case WEBSOCKET_MESSAGE_RECEIVED:
-    case WEBSOCKET_MESSAGE_SENT:
-      return {
-        ...state,
-        lastMessage: action.payload,
-      };
-    case CALIBRATION_MESSAGE_RECEIVED:
-      return {
-        ...state,
-        calibrationData: action.payload,
-      };
-    case CONFIGURATION_MESSAGE_RECEIVED:
-      return {
-        ...state,
-        configurationData: action.payload,
-      };
-    case DIAGNOSTICS_MESSAGE_RECEIVED:
-      return {
-        ...state,
-        diagnosticsData: action.payload,
-      };
+      if (!action.payload || !action.payload.type) {
+        console.warn("Unexpected WebSocket message format:", action.payload);
+        return state; // Return the current state if the message format is unexpected
+      }
+      switch (action.payload.type) {
+        case "pulseCount":
+          return {
+            ...state,
+            data: action.payload.data,
+          };
+        case "calibration":
+          return {
+            ...state,
+            calibrationData: action.payload.data,
+          };
+        case "configuration":
+          return {
+            ...state,
+            configurationData: action.payload.data,
+          };
+        case "diagnostics":
+          return {
+            ...state,
+            diagnosticsData: action.payload.data,
+          };
+        default:
+          console.warn("Unhandled WebSocket message type:", action.payload.type);
+          return state;
+      }
+
     default:
       return state;
   }
