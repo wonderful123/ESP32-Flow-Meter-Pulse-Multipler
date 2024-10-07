@@ -9,7 +9,7 @@ const WEB_APP_URL = "http://localhost:8080";
 const API_PREFIX = "/api/v1";
 const API_SERVER_PORT = 3000;
 const WEBSOCKET_SERVER_PORT = 8085;
-const PULSE_COUNT_UPDATE_INTERVAL = 100; // in milliseconds
+const PULSE_COUNT_UPDATE_INTERVAL = 10; // in milliseconds
 
 // Create a WebSocket server
 const wss = new WebSocketServer({
@@ -17,6 +17,15 @@ const wss = new WebSocketServer({
   path: "/ws",
 });
 const clients = new Set();
+
+// Function to generate consistent JSON response format
+function jsonResponse(statusCode, message, data = null) {
+  return {
+    status: statusCode === 200 || statusCode === 201 ? "success" : "error",
+    message,
+    data,
+  };
+}
 
 // Handle WebSocket connections
 wss.on("connection", ws => {
@@ -57,7 +66,7 @@ wss.on("connection", ws => {
   });
 });
 
-// Simulate pulse count data
+/******** Simulate pulse count data ********/
 let pulseCount = 0;
 let isPulseCountingActive = false;
 
@@ -71,8 +80,6 @@ function startPulseCountSimulation() {
     console.log("[MOCK-SERVER][WEBSOCKET] Pulse count simulation is already running.");
   }
 }
-
-startPulseCountSimulation(); // Start the simulation on server startup
 
 function stopPulseCountSimulation() {
   if (isPulseCountingActive) {
@@ -104,6 +111,8 @@ function sendPulseCountUpdate() {
   setTimeout(sendPulseCountUpdate, PULSE_COUNT_UPDATE_INTERVAL);
 }
 
+/******** End of pulse count data ********/
+
 // Allow CORS with specific methods
 server.use(middlewares);
 server.use((req, res, next) => {
@@ -119,7 +128,7 @@ server.use(jsonServer.bodyParser);
 // GET /api/calibration-records
 server.get(`${API_PREFIX}/calibration-records`, (req, res) => {
   const records = router.db.get("calibrationRecords").value();
-  res.json(records);
+  res.status(200).jsonp(jsonResponse(200, "Fetched calibration records.", records));
   console.log("[MOCK-SERVER][API] Fetched calibration records");
 });
 
@@ -134,12 +143,10 @@ server.get(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
     .value();
 
   if (record) {
-    res.jsonp(record);
+    res.status(200).jsonp(jsonResponse(200, `Fetched calibration record with ID: ${id}`, record));
     console.log(`[MOCK-SERVER][API] Fetched calibration record with ID: ${id}`);
   } else {
-    res.status(404).jsonp({
-      error: "[MOCK-SERVER] Calibration record not found",
-    });
+    res.status(404).jsonp(jsonResponse(404, "[MOCK-SERVER] Calibration record not found"));
     console.log(`[MOCK-SERVER][API] Calibration record with ID ${id} not found`);
   }
 });
@@ -158,12 +165,10 @@ server.post(`${API_PREFIX}/calibration-records`, (req, res) => {
     };
 
     router.db.get("calibrationRecords").push(newRecord).write();
-    res.status(201).jsonp(newRecord);
+    res.status(201).jsonp(jsonResponse(201, "Calibration record added successfully.", newRecord));
     console.log("[MOCK-SERVER][API] New calibration record created");
   } else {
-    res.status(400).jsonp({
-      error: "[MOCK-SERVER] Missing required fields",
-    });
+    res.status(400).jsonp(jsonResponse(400, "[MOCK-SERVER] Missing required fields"));
     console.log("[MOCK-SERVER][API] Missing required fields for creating a new calibration record");
   }
 });
@@ -181,10 +186,10 @@ server.put(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
     if (pulseCount !== undefined) record.pulseCount = pulseCount;
 
     router.db.get("calibrationRecords").find({ id }).assign(record).write();
-    res.jsonp(record);
+    res.status(200).jsonp(jsonResponse(200, "Calibration record updated successfully.", record));
     console.log("[MOCK-SERVER][API] Calibration record updated successfully");
   } else {
-    res.status(404).jsonp({ error: "[MOCK-SERVER] Calibration record not found" });
+    res.status(404).jsonp(jsonResponse(404, "[MOCK-SERVER] Calibration record not found"));
     console.log(`[MOCK-SERVER][API] Calibration record with ID ${id} not found`);
   }
 });
@@ -192,26 +197,14 @@ server.put(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
 // DELETE /api/calibration-records/:id
 server.delete(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const record = router.db
-    .get("calibrationRecords")
-    .find({
-      id,
-    })
-    .value();
+  const record = router.db.get("calibrationRecords").find({ id }).value();
 
   if (record) {
-    router.db
-      .get("calibrationRecords")
-      .remove({
-        id,
-      })
-      .write();
-    res.sendStatus(204);
-    console.log(`[MOCK-SERVER][API] Calibration record with ID ${id} deleted successfully`);
+    router.db.get("calibrationRecords").remove({ id }).write();
+    res.status(200).jsonp(jsonResponse(200, "Calibration record deleted successfully."));
+    console.log(`[MOCK-SERVER][API] Calibration record with ID ${id} deleted`);
   } else {
-    res.status(404).jsonp({
-      error: "[MOCK-SERVER] Calibration record not found",
-    });
+    res.status(404).jsonp(jsonResponse(404, "[MOCK-SERVER] Calibration record not found"));
     console.log(`[MOCK-SERVER][API] Calibration record with ID ${id} not found`);
   }
 });
@@ -220,31 +213,31 @@ server.delete(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
 server.get(`${API_PREFIX}/calibration/start`, (req, res) => {
   startPulseCountSimulation();
   console.log("[MOCK-SERVER][API] Calibration started.");
-  res.jsonp({
-    message: "[MOCK-SERVER] Calibration started.",
-  });
+  res.status(200).jsonp(
+    jsonResponse(200, "[MOCK-SERVER] Calibration started.")
+  );
 });
 
 // Route to stop pulse count simulation
 server.get(`${API_PREFIX}/calibration/stop`, (req, res) => {
   stopPulseCountSimulation();
   console.log("[MOCK-SERVER][API] Calibration stopped.");
-  res.jsonp({
-    message: "[MOCK-SERVER] Calibration stopped.",
-    pulseCount: pulseCount,
-  });
+  res.status(200).jsonp(
+    jsonResponse(200, "[MOCK-SERVER] Calibration stopped.", { pulseCount })
+  );
 });
 
+// Route to reset pulse count
 server.get(`${API_PREFIX}/calibration/reset`, (req, res) => {
   pulseCount = 0;
   sendPulseCount();
   console.log("[MOCK-SERVER][API] Calibration pulse counter reset.");
-  res.jsonp({
-    message: "[MOCK-SERVER] Calibration pulse counter reset.",
-    pulseCount: pulseCount,
-  });
+  res.status(200).jsonp(
+    jsonResponse(200, "[MOCK-SERVER] Calibration pulse counter reset.", { pulseCount })
+  );
 });
 
+// Route to check firmware version
 server.get(`${API_PREFIX}/firmware-version`, (req, res) => {
   // Trigger the firmware update check
   clients.forEach(client => {
@@ -257,42 +250,26 @@ server.get(`${API_PREFIX}/firmware-version`, (req, res) => {
     }
   });
 
-  res.jsonp({
-    message: "[MOCK-SERVER] Firmware update check initiated.",
-    currentVersion: router.db.get("firmware").value().currentVersion,
-  });
+  const currentVersion = router.db.get("firmware").value().currentVersion;
   console.log("[MOCK-SERVER][API] Firmware update check initiated");
+  
+  res.status(200).jsonp(
+    jsonResponse(200, "[MOCK-SERVER] Firmware update check initiated.", { currentVersion })
+  );
 });
 
+// Route to simulate firmware OTA update
 server.post(`${API_PREFIX}/firmware-update`, (req, res) => {
   // Simulate the OTA update process
   clients.forEach(client => {
     if (client.readyState === WebSocket.OPEN) {
       const messages = [
-        {
-          type: "status",
-          message: "Starting OTA update...",
-        },
-        {
-          type: "progress",
-          percentage: 25,
-        },
-        {
-          type: "progress",
-          percentage: 50,
-        },
-        {
-          type: "progress",
-          percentage: 75,
-        },
-        {
-          type: "progress",
-          percentage: 100,
-        },
-        {
-          type: "updateCompleted",
-          newVersion: "1.1.0",
-        },
+        { type: "status", message: "Starting OTA update..." },
+        { type: "progress", percentage: 25 },
+        { type: "progress", percentage: 50 },
+        { type: "progress", percentage: 75 },
+        { type: "progress", percentage: 100 },
+        { type: "updateCompleted", newVersion: "1.1.0" },
       ];
 
       messages.forEach((msg, index) => {
@@ -304,10 +281,11 @@ server.post(`${API_PREFIX}/firmware-update`, (req, res) => {
     }
   });
 
-  res.jsonp({
-    message: "[MOCK-SERVER] Attempting to perform OTA update...",
-  });
   console.log("[MOCK-SERVER][API] Attempting to perform OTA update");
+  
+  res.status(200).jsonp(
+    jsonResponse(200, "[MOCK-SERVER] Attempting to perform OTA update.")
+  );
 });
 
 server.use(router); // Use the router
