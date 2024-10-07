@@ -1,106 +1,39 @@
-// calibrationReducer.js
-import {
-  START_CALIBRATION,
-  STOP_CALIBRATION,
-  RESET_CALIBRATION,
-  FETCH_CALIBRATION_RECORDS_REQUEST,
-  FETCH_CALIBRATION_RECORDS_SUCCESS,
-  FETCH_CALIBRATION_RECORDS_FAILURE,
-  CREATE_CALIBRATION_RECORD_REQUEST,
-  CREATE_CALIBRATION_RECORD_SUCCESS,
-  CREATE_CALIBRATION_RECORD_FAILURE,
-  UPDATE_CALIBRATION_RECORD_REQUEST,
-  UPDATE_CALIBRATION_RECORD_SUCCESS,
-  UPDATE_CALIBRATION_RECORD_FAILURE,
-  DELETE_CALIBRATION_RECORD_REQUEST,
-  DELETE_CALIBRATION_RECORD_SUCCESS,
-  DELETE_CALIBRATION_RECORD_FAILURE,
-} from "../actions/calibrationActions";
+// Action Types
+export const CALIBRATION_ACTION = "CALIBRATION_ACTION";
+export const CALIBRATION_SUCCESS = "CALIBRATION_SUCCESS";
+export const CALIBRATION_FAILURE = "CALIBRATION_FAILURE";
 
+// Initial State
 const initialState = {
   calibrating: false,
-  calibrationData: {
-    startPulseCount: 0,
-    startTemperature: 0,
-    endPulseCount: 0,
-    endTemperature: 0,
-    targetOilVolume: 0,
-    observedOilVolume: 0,
-  },
-  records: [],
-  loading: false,
+  calibrationData: null,
   error: null,
 };
 
+// Reducer
 const calibrationReducer = (state = initialState, action) => {
   switch (action.type) {
-    case START_CALIBRATION:
+    case CALIBRATION_ACTION:
       return {
         ...state,
-        calibrating: true,
+        calibrating: action.payload === "START",
+        error: null, // Reset error when a new action starts
       };
-    case STOP_CALIBRATION:
+
+    case CALIBRATION_SUCCESS:
       return {
         ...state,
-        calibrating: false,
-        calibrationData: {
-          ...state.calibrationData,
-          endPulseCount: action.payload.pulseCount,
-          endTemperature: action.payload.temperature,
-        },
+        calibrating: action.payload === "START", // Continue calibration if start is successful
+        error: null, // Clear any errors
       };
-    case RESET_CALIBRATION:
+
+    case CALIBRATION_FAILURE:
       return {
         ...state,
-        calibrating: false,
-        calibrationData: initialState.calibrationData,
+        calibrating: false, // Stop calibrating on failure
+        error: action.payload, // Store the error message
       };
-    case FETCH_CALIBRATION_RECORDS_REQUEST:
-    case CREATE_CALIBRATION_RECORD_REQUEST:
-    case UPDATE_CALIBRATION_RECORD_REQUEST:
-    case DELETE_CALIBRATION_RECORD_REQUEST:
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      };
-    case FETCH_CALIBRATION_RECORDS_SUCCESS:
-      return {
-        ...state,
-        records: action.payload,
-        loading: false,
-        error: null,
-      };
-    case CREATE_CALIBRATION_RECORD_SUCCESS:
-      return {
-        ...state,
-        records: [...state.records, action.payload],
-        loading: false,
-        error: null,
-      };
-    case UPDATE_CALIBRATION_RECORD_SUCCESS:
-      return {
-        ...state,
-        records: state.records.map(record => (record.id === action.payload.id ? action.payload : record)),
-        loading: false,
-        error: null,
-      };
-    case DELETE_CALIBRATION_RECORD_SUCCESS:
-      return {
-        ...state,
-        records: state.records.filter(record => record.id !== action.payload),
-        loading: false,
-        error: null,
-      };
-    case FETCH_CALIBRATION_RECORDS_FAILURE:
-    case CREATE_CALIBRATION_RECORD_FAILURE:
-    case UPDATE_CALIBRATION_RECORD_FAILURE:
-    case DELETE_CALIBRATION_RECORD_FAILURE:
-      return {
-        ...state,
-        loading: false,
-        error: action.payload,
-      };
+
     default:
       return state;
   }
