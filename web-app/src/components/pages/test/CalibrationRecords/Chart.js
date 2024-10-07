@@ -2,8 +2,8 @@
 import m from "mithril";
 import ChartComponent from "components/common/ChartComponent";
 import { AutoScaleAxis, Interpolation } from "chartist";
-import CalibrationService from "../../../../services/CalibrationService";
-import ErrorHandler from "../../../../services/ErrorHandler";
+import CalibrationRecordsService from "services/CalibrationRecordsService";
+import ErrorHandler from "services/ErrorHandler";
 
 const X_AXIS_TITLE = "Temperature (°C)";
 const Y_AXIS_TITLE = "Calibration Factor (%)";
@@ -52,9 +52,9 @@ const Chart = {
   },
 
   oncreate: function (vnode) {
-    CalibrationService.getCalibrationRecords()
+    CalibrationRecordsService.getCalibrationRecords()
       .then(response => {
-        vnode.state.chartData = buildChartData(response);
+        vnode.state.chartData = buildChartData(response.data);
         m.redraw();
       })
       .catch(error => {
