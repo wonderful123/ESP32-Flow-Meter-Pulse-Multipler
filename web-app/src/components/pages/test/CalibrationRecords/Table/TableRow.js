@@ -57,7 +57,7 @@ const TableRow = {
       m("td", record.observedOilVolume),
       m("td", pulsesPerLiter(record.pulseCount, record.targetOilVolume)),
       m("td", calibrationFactor(record.targetOilVolume, record.observedOilVolume)),
-      m("td", record.timestamp),
+      m("td", new Date(record.timestamp).toLocaleString("en-AU", { "dateStyle": "short", "timeStyle": "short" })),
       m("td.actions", [
         m(EditActions, {
           isEditing,
