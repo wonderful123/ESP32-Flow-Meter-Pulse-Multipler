@@ -7,7 +7,7 @@ const config = {
     version: 'v1',
   },
   websocket: {
-    url: 'ws://locahost',
+    url: 'ws://localhost',
     port: 8085,
     timeout: 5000,
     maxReconnectAttempts: 10,
