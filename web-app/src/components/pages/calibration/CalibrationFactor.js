@@ -1,6 +1,6 @@
 // CalibrationFactor.js
 import m from "mithril";
-import CalibrationFactorModel from "models/CalibrationFactorModel";
+import CalibrationFactorModel from "store/models/CalibrationFactorModel";
 
 const CalibrationFactor = {
   oninit: CalibrationFactorModel.loadCalibrationFactor,
