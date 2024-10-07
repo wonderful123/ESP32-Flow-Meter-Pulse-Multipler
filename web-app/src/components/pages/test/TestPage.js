@@ -2,7 +2,7 @@ import m from "mithril";
 import SectionContainer from "components/common/SectionContainer";
 import Table from "./CalibrationRecords/Table";
 import Chart from "./CalibrationRecords/Chart";
-import ErrorHandler from "../../../services/ErrorHandler";
+import ErrorHandler from "services/ErrorHandler";
 const TestPage = {
   view: () => {
     return m(SectionContainer, [
