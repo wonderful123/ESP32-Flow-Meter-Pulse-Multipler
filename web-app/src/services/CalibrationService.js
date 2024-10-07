@@ -1,45 +1,26 @@
 // CalibrationService.js
-import APIService from './APIService';
-import CalibrationRecord from 'store/models/CalibrationRecord';
+import APIService from "./APIService";
 
-const CalibrationService = {
-  getCalibrationRecords: async () => {
-    try {
-      const response = await APIService.get("/calibration-records");
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
+const handleCalibrationRequest = async endpoint => {
+  try {
+    // APIService.get already returns the parsed JSON data
+    const response = await APIService.get(`/calibration/${endpoint}`);
 
-  createCalibrationRecord: async data => {
-    try {
-      const calibrationRecord = new CalibrationRecord(data);
-      const response = await APIService.post("/calibration-records", calibrationRecord);
-      return response.data;
-    } catch (error) {
-      throw error;
+    // Optionally, if the response includes a status or success flag, you can check it
+    if (!response.status === 'success') {
+      console.log(response.status)
+      console.log(response.status === 'success' ? 'Calibration request successful' : 'Calibration request failed');
+      // Assuming response has a `success` field
+      throw new Error(`Calibration request failed: ${response.message || "Unknown error"}`);
     }
-  },
 
-  updateCalibrationRecord: async (id, data) => {
-    try {
-      let calibrationRecord = new CalibrationRecord(data);
-      calibrationRecord.body = data
-      const response = await APIService.put(`/calibration-records/${id}`, calibrationRecord);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  deleteCalibrationRecord: async id => {
-    try {
-      await APIService.delete(`/calibration-records/${id}`);
-    } catch (error) {
-      throw error;
-    }
-  },
+    return response; // Return the parsed response directly
+  } catch (error) {
+    console.error(`Error during ${endpoint} calibration:`, error);
+    throw error; // Let the caller handle the error
+  }
 };
 
-export default CalibrationService;
+export const startCalibration = () => handleCalibrationRequest("start");
+export const stopCalibration = () => handleCalibrationRequest("stop");
+export const resetCalibration = () => handleCalibrationRequest("reset");
