@@ -1,6 +1,6 @@
 // CalibrationRecords/Table/Table.js
 import m from "mithril";
-import CalibrationService from "services/CalibrationService";
+import CalibrationRecordsService from "services/CalibrationRecordsService";
 import ErrorHandler from "services/ErrorHandler";
 import ConfirmationModal from "components/common/ConfirmationModal";
 import TableRow from "./TableRow";
@@ -24,8 +24,8 @@ class Table {
 
   async fetchRecords() {
     try {
-      const records = await CalibrationService.getCalibrationRecords();
-      this.records = records;
+      const request = await CalibrationRecordsService.getCalibrationRecords();
+      this.records = request.data;
       this.sortRecords();
     } catch (error) {
       ErrorHandler.handleError(error);
@@ -73,7 +73,7 @@ class Table {
   async confirmDelete() {
     try {
       const recordId = this.recordToDelete.id;
-      await CalibrationService.deleteCalibrationRecord(recordId);
+      await CalibrationRecordsService.deleteCalibrationRecord(recordId);
       this.records = this.records.filter(record => record.id !== recordId);
       this.isDeleteModalOpen = false;
       this.recordToDelete = null;
@@ -98,7 +98,7 @@ class Table {
   }
 
   saveEdits(editedRecord) {
-    CalibrationService.updateCalibrationRecord(editedRecord.id, editedRecord)
+    CalibrationRecordsService.updateCalibrationRecord(editedRecord.id, editedRecord)
       .then(() => {
         const index = this.records.findIndex(record => record.id === editedRecord.id);
         if (index !== -1) {
