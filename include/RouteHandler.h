@@ -3,7 +3,7 @@
 
 #include <ESPAsyncWebServer.h>
 
-#include "CalibrationManager.h"
+#include "Calibration/CalibrationManager.h"
 #include "OTAUpdater.h"
 #include "PulseCounter.h"
 
@@ -23,11 +23,10 @@ class RouteHandler {
   OTAUpdater& _otaUpdater;
   WebServerManager& _webServerManager;
 
+  void sendJsonResponse(AsyncWebServerRequest* request, int statusCode,
+                        const char* message, JsonObject& data);
+
   // Declaration of route handling methods
-  void getCalibrationFactor(AsyncWebServerRequest* request);
-  void setCalibrationFactor(AsyncWebServerRequest* request);
-  void getSelectedRecordId(AsyncWebServerRequest* request);
-  void setSelectedRecordId(AsyncWebServerRequest* request);
   void getCalibrationRecords(AsyncWebServerRequest* request);
   void getCalibrationRecord(AsyncWebServerRequest* request);
   void addCalibrationRecord(AsyncWebServerRequest* request);

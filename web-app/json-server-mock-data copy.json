@@ -1,0 +1,79 @@
+{
+  "calibrationRecords": [
+    {
+      "id": 1,
+      "timestamp": "2024-06-19T08:00:00Z",
+      "oilTemperature": 25.5,
+      "pulseCount": 8500,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.42
+    },
+    {
+      "id": 2,
+      "timestamp": "2024-06-19T09:00:00Z",
+      "oilTemperature": 30.2,
+      "pulseCount": 8600,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.48
+    },
+    {
+      "id": 3,
+      "timestamp": "2024-06-19T10:00:00Z",
+      "oilTemperature": 40.8,
+      "pulseCount": 8800,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.53
+    },
+    {
+      "id": 4,
+      "timestamp": "2024-06-19T11:00:00Z",
+      "oilTemperature": 50.1,
+      "pulseCount": 9000,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.57
+    },
+    {
+      "id": 5,
+      "timestamp": "2024-06-19T12:00:00Z",
+      "oilTemperature": 60.6,
+      "pulseCount": 9200,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.61
+    },
+    {
+      "id": 6,
+      "timestamp": "2024-06-19T13:00:00Z",
+      "oilTemperature": 70.3,
+      "pulseCount": 9400,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.64
+    },
+    {
+      "id": 7,
+      "timestamp": "2024-06-19T14:00:00Z",
+      "oilTemperature": 80.9,
+      "pulseCount": 9600,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.68
+    },
+    {
+      "id": 8,
+      "timestamp": "2024-06-19T15:00:00Z",
+      "oilTemperature": 90.2,
+      "pulseCount": 9800,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.72
+    },
+    {
+      "id": 9,
+      "timestamp": "2024-06-19T16:00:00Z",
+      "oilTemperature": 95.7,
+      "pulseCount": 10000,
+      "targetOilVolume": 4.5,
+      "observedOilVolume": 4.75
+    }
+  ],
+  "firmware": {
+    "currentVersion": "1.0.0"
+  }
+}

@@ -4,16 +4,16 @@ import m from "mithril";
 import "../public/styles/main.scss";
 
 import MainLayout from "layouts/MainLayout";
-import CalibrationPage from "pages/calibration/CalibrationPage"
+import DashboardPage from "pages/dashboard/DashboardPage";
+import CalibrationPage from "pages/calibration/CalibrationPage";
 import FirmwarePage from "components/pages/firmware/FirmwarePage";
 import AboutPage from "components/pages/AboutPage";
+import TestPage from "components/pages/test/TestPage";
 
 import WebSocketService from "./services/WebSocketService";
 
-// Get the WebSocket port based on the environment
-const wsPort = process.env.WEBSOCKET_PORT;
-WebSocketService.connect(`ws://pulse-scaler.local:${wsPort}/ws`);
-// WebSocketService.connect('ws://' + window.location.hostname + ':80/ws');
+WebSocketService.connect();
+
 // Arguments:
 // - document.body: root element to mount app to
 // - "/": default route path
@@ -21,17 +21,27 @@ WebSocketService.connect(`ws://pulse-scaler.local:${wsPort}/ws`);
 m.route(document.body, "/", {
   "/": {
     render: function () {
+      return m(MainLayout, m(DashboardPage));
+    },
+  },
+  "/calibration": {
+    render: function () {
       return m(MainLayout, m(CalibrationPage));
-    }
+    },
   },
   "/firmware": {
     render: function () {
       return m(MainLayout, m(FirmwarePage));
-    }
+    },
   },
   "/about": {
     render: function () {
       return m(MainLayout, m(AboutPage));
-    }
-  }
+    },
+  },
+  "/test": {
+    render: function () {
+      return m(MainLayout, m(TestPage));
+    },
+  },
 });

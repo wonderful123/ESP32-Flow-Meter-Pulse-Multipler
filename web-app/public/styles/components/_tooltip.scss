@@ -1,33 +1,48 @@
-.tooltip {
+$tooltip-bg: rgb(4, 4, 4);
+$tooltip-color: #fff;
+$tooltip-radius: 5px;
+$tooltip-padding: 6px 10px;
+$tooltip-arrow-size: 5px;
+$tooltip-offset: 10px;
+
+[data-tooltip] {
   position: relative;
-  display: inline-block;
 
-  &__text {
-    visibility: hidden;
-    background-color: black;
-    color: white;
-    text-align: center;
-    padding: 5px;
-    border-radius: 6px;
-    position: absolute;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.3s;
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: black transparent transparent transparent;
-    }
+  &:hover::before,
+  &:hover::after {
+    opacity: 1;
+    visibility: visible;
   }
 
-  &:hover .tooltip__text {
-    visibility: visible;
-    opacity: 1;
+  &::before,
+  &::after {
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    filter: drop-shadow(2px 2px 5px #363636);
+    z-index: 9999;
+  }
+
+  &::before {
+    content: attr(data-tooltip);
+    background-color: $tooltip-bg;
+    color: $tooltip-color;
+    border-radius: $tooltip-radius;
+    padding: $tooltip-padding;
+    white-space: nowrap;
+    bottom: calc(100% + #{$tooltip-arrow-size} + #{$tooltip-offset});
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &::after {
+    content: "";
+    border-style: solid;
+    border-width: $tooltip-arrow-size $tooltip-arrow-size 0 $tooltip-arrow-size;
+    border-color: $tooltip-bg transparent transparent transparent;
+    bottom: calc(100% + #{$tooltip-offset});
+    left: 50%;
+    transform: translateX(-50%);
   }
 }

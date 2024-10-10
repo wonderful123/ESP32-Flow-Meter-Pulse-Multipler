@@ -62,15 +62,15 @@ const FirmwareModel = {
           FirmwareModel.progress = message.percentage;
           break;
         case "error":
-          this.updateStatus = `Error checking update: ${message.message}`;
+          FirmwareModel.updateStatus = `Error checking update: ${message.message}`;
           break;
         case "updateAvailable":
-          this.updateAvailable = `Update to version ${message.newVersion} available.<br>Changes: ${message.changes}`;
-          this.updateStatus = "";
+          FirmwareModel.updateAvailable = `Update to version ${message.newVersion} available.<br>Changes: ${message.changes}`;
+          FirmwareModel.updateStatus = "";
           break;
         case "noUpdate":
-          this.updateAvailable = null;
-          this.updateStatus = message.message;
+          FirmwareModel.updateAvailable = null;
+          FirmwareModel.updateStatus = message.message;
           break;
         case "updateCompleted":
           FirmwareModel.updateStatus = "Update completed";

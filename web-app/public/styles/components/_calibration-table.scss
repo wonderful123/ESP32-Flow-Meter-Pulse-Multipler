@@ -1,0 +1,30 @@
+th {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  text-wrap: nowrap;
+
+  abbr {
+    text-decoration: none;
+  }
+
+  .sort-icon {
+    margin-left: 3px;
+    font-size: 8px;
+    vertical-align: middle;
+  }
+}
+
+.actions {
+  display: table-cell;
+  white-space: nowrap;
+
+  .icon {
+    cursor: pointer;
+    margin-right: 0.1rem;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}

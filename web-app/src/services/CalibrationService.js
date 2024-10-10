@@ -1,41 +1,26 @@
 // CalibrationService.js
-import m from "mithril";
-import StatusMessageService from "services/StatusMessageService";
+import APIService from "./APIService";
 
-const CalibrationService = {
-  startCounter: () => {
-    // Send request to /calibration/start
-    m.request({
-      method: "GET",
-      url: "api/calibration/start"
-    }).then(response => {
-      StatusMessageService.setMessage(response.message, "success");
-    }).catch(error => {
-      console.error("Error starting calibration:", error);
-    });
-  },
-  stopCounter: () => {
-    // Send request to /calibration/stop
-    m.request({
-      method: "GET",
-      url: "api/calibration/stop"
-    }).then(response => {
-      StatusMessageService.setMessage(response.message, "info");
-    }).catch(error => {
-      console.error("Error stopping calibration:", error);
-    });;
-  },
-  resetCounter: () => {
-    // Send reset request to /calibration/reset
-    m.request({
-      method: "GET",
-      url: "api/calibration/reset"
-    }).then(response => {
-      StatusMessageService.setMessage(response.message, "info");
-    }).catch(error => {
-      console.error("Error stopping calibration:", error);
-    });
-  },
+const handleCalibrationRequest = async endpoint => {
+  try {
+    // APIService.get already returns the parsed JSON data
+    const response = await APIService.get(`/calibration/${endpoint}`);
+
+    // Optionally, if the response includes a status or success flag, you can check it
+    if (!response.status === 'success') {
+      console.log(response.status)
+      console.log(response.status === 'success' ? 'Calibration request successful' : 'Calibration request failed');
+      // Assuming response has a `success` field
+      throw new Error(`Calibration request failed: ${response.message || "Unknown error"}`);
+    }
+
+    return response; // Return the parsed response directly
+  } catch (error) {
+    console.error(`Error during ${endpoint} calibration:`, error);
+    throw error; // Let the caller handle the error
+  }
 };
 
-export default CalibrationService;
+export const startCalibration = () => handleCalibrationRequest("start");
+export const stopCalibration = () => handleCalibrationRequest("stop");
+export const resetCalibration = () => handleCalibrationRequest("reset");

@@ -3,11 +3,10 @@
 
 #define ENABLE_LOGGING 1
 
-#include <WString.h>  // Arduino String library
-#undef B0             // Undefine conflicting macro
-#undef B1             // Undefine conflicting macro
-#include <fmt/core.h>  // Include fmt library headers after undefining the
-// macros
+#include <Arduino.h>   // Arduino String library
+#undef B0              // Undefine conflicting macro
+#undef B1              // Undefine conflicting macro
+#include <fmt/core.h>  // Include fmt library headers after undefining the macros
 
 #include <functional>
 #include <iostream>
@@ -28,6 +27,10 @@ class Logger {
   static void addLogOutput(LogOutput output);
 
   std::string getUptimeTimestamp() const;
+  void clearLogOutputs() {
+    std::lock_guard<std::mutex> guard(_mutex);
+    _outputs.clear();
+  }
 
   // Overloads for different string types
   void log(LogLevel level, const std::string& file, int line,

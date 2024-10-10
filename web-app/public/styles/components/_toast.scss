@@ -1,0 +1,53 @@
+// @import url('https://cdn.jsdelivr.net/npm/animate.css@4.0.0/animate.min.css');
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.toast-animation {
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+}
+
+.toast-animation.animate__fadeInUp {
+  animation-name: fadeInUp;
+}
+
+.toast-animation.animate__fadeOutDown {
+  animation-name: fadeOutDown;
+}
+
+.toast-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 99999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  transition: transform 0.5s ease;
+
+  .notification {
+    width: 350px !important;
+    max-width: 100%;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+}

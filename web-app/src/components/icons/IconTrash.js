@@ -1,19 +1,18 @@
 // IconTrash.js
 import m from "mithril";
+import BaseIcon from "./BaseIcon";
 
 const IconTrash = {
   view: function (vnode) {
-    return m("svg", {
-        xmlns: "http://www.w3.org/2000/svg",
-        viewBox: "0 0 448 512",
-        class: "icon" + (vnode.attrs.class || ""), // Ensuring any passed class is applied
-        style: vnode.attrs.style, // Applying any passed style
-        fill: "currentColor" // This sets the SVG fill color to inherit from its parent
-      },
+    return m(BaseIcon, {
+      viewBox: "0 0 24 24", // Adjusted viewBox for consistent aspect ratio
+      ...vnode.attrs
+    }, [
       m("path", {
-        d: "M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"
+        fill: "currentColor",
+        d: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
       })
-    );
+    ]);
   }
 };
 

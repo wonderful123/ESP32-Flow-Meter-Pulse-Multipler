@@ -28,11 +28,10 @@ void WebServerManager::begin() {
   LOG_INFO("HTTP server started at IP address: {} ***",
            WiFi.localIP().toString().c_str());
   startMDNS();
-  _epochTimeManager.begin();
   _otaUpdater.begin();
 }
 
-void WebServerManager::update() { _epochTimeManager.update(); }
+void WebServerManager::update() {}
 
 void WebServerManager::broadcastWebsocketMessage(String& type,
                                                  String& message) {
@@ -48,8 +47,4 @@ void WebServerManager::startMDNS() {
   LOG_INFO("mDNS responder started at:");
   LOG_INFO("http://{}.local", MDNS_DOMAIN_NAME);
   LOG_INFO("=================================");
-}
-
-EpochTimeManager& WebServerManager::getEpochTimeManager() {
-  return _epochTimeManager;
 }
