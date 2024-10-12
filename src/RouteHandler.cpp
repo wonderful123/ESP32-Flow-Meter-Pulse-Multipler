@@ -78,39 +78,48 @@ void RouteHandler::registerRoutes(AsyncWebServer& server) {
 // Helper function to create a JSON response
 void RouteHandler::sendJsonResponse(AsyncWebServerRequest* request,
                                     int statusCode, const char* message,
-                                    const JsonObject& data) {
-  StaticJsonDocument<200> jsonResponse;
+                                    JsonDocument data = JsonDocument()) {
+  JsonDocument jsonResponse;
   jsonResponse["status"] = (statusCode == 200) ? "success" : "error";
   jsonResponse["message"] = message;
 
   if (!data.isNull()) {
-    JsonObject responseData = jsonResponse.createNestedObject("data");
-    responseData.set(data);
+    jsonResponse["data"] = data;  // Directly set data
   }
 
   String responseString;
   serializeJson(jsonResponse, responseString);
-  request->send(statusCode, "application/json", responseString);
+  // request->send(statusCode, "application/json", responseString);
 }
 
 // Handle GET /api/calibration-records
 void RouteHandler::getCalibrationRecords(AsyncWebServerRequest* request) {
   LOG_INFO("Fetching calibration records...");
-  String json = _calibrationManager.getCalibrationRecordsJson();
-  sendJsonResponse(request, 200, "Fetched calibration records.", json);
+  JsonDocument recordData = _calibrationManager.getCalibrationRecordsJson();
+  sendJsonResponse(request, 200, "Fetched calibration records.", recordData);
 }
 
 // Handle GET /api/calibration-records/{id}
 void RouteHandler::getCalibrationRecord(AsyncWebServerRequest* request) {
-  if (request->hasParam("id")) {
-    int id = request->getParam("id")->value().toInt();
-    String json = _calibrationManager.getCalibrationRecordJson(id);
-    sendJsonResponse(request, 200, "Fetched calibration record.", json);
+  // Check if "id" parameter is present
+  if (!request->hasParam("id")) {
+    LOG_INFO("Missing ID parameter in getCalibrationRecord request");
+    sendJsonResponse(request, 400, "Missing ID parameter.");
+    return;
+  }
+  
+  int id = request->getParam("id")->value().toInt();
+  JsonDocument doc = _calibrationManager.getCalibrationRecordJson(id);
+  
+  // Handle case where the calibration record exists
+  if (!doc.isNull()) {
+    LOG_INFO("Calibration record found for ID: {}", id);
+    sendJsonResponse(request, 200, "Fetched calibration record.", doc);
   } else {
-    sendJsonResponse(request, 400, "Missing ID parameter.", {});
+    LOG_INFO("Calibration record not found for ID: {}", id);
+    sendJsonResponse(request, 404, "Calibration record not found.");
   }
 }
-
 void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
   // Log the request args
   LOG_INFO("Adding calibration record...");
@@ -137,8 +146,7 @@ void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
                                              targetOilVolume, observedOilVolume,
                                              timestamp);
 
-    sendJsonResponse(request, 201, "Calibration record added successfully.",
-                     {});
+    sendJsonResponse(request, 201, "Calibration record added successfully.");
     _pulseCounter.resetPulseCount();  // Reset for the next calibration
   } else {
     String missingFields = "";
@@ -151,7 +159,7 @@ void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
       missingFields += "observedOilVolume ";
     if (!request->hasParam("timestamp")) missingFields += "timestamp ";
 
-    StaticJsonDocument<200> data;
+    JsonDocument data;
     data["missingFields"] = missingFields;
     sendJsonResponse(request, 400, "Missing required parameters.", data);
   }
@@ -179,10 +187,9 @@ void RouteHandler::editCalibrationRecord(AsyncWebServerRequest* request) {
                                                 targetOilVolume,
                                                 observedOilVolume, timestamp);
 
-    sendJsonResponse(request, 200, "Calibration record updated successfully.",
-                     {});
+    sendJsonResponse(request, 200, "Calibration record updated successfully.");
   } else {
-    sendJsonResponse(request, 400, "Missing data for update.", {});
+    sendJsonResponse(request, 400, "Missing data for update.");
   }
 }
 
@@ -193,10 +200,9 @@ void RouteHandler::deleteCalibrationRecord(AsyncWebServerRequest* request) {
   if (request->hasParam("id")) {
     int id = request->getParam("id")->value().toInt();
     _calibrationManager.deleteCalibrationRecord(id);
-    sendJsonResponse(request, 200, "Calibration record deleted successfully.",
-                     {});
+    sendJsonResponse(request, 200, "Calibration record deleted successfully.");
   } else {
-    sendJsonResponse(request, 400, "Missing ID for deletion.", {});
+    sendJsonResponse(request, 400, "Missing ID for deletion.");
   }
 }
 
@@ -205,7 +211,7 @@ void RouteHandler::startCalibration(AsyncWebServerRequest* request) {
   _pulseCounter.resetPulseCount();  // Reset the pulse count
   _pulseCounter.startCounting();    // Start counting pulses
 
-  StaticJsonDocument<200> data;
+  JsonDocument data;
   data["pulseCount"] = 0;
   sendJsonResponse(request, 200, "Calibration started. Please start your flow.",
                    data);
@@ -216,7 +222,7 @@ void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
   _pulseCounter.stopCounting();
   unsigned long pulseCount = _pulseCounter.getPulseCount();
 
-  StaticJsonDocument<200> data;
+  JsonDocument data;
   data["pulseCount"] = pulseCount;
   sendJsonResponse(request, 200, "Calibration stopped.", data);
 }
@@ -231,7 +237,7 @@ void RouteHandler::resetCalibration(AsyncWebServerRequest* request) {
 void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
   _otaUpdater.checkForUpdate();
 
-  StaticJsonDocument<200> data;
+  JsonDocument data;
   data["currentVersion"] = FIRMWARE_VERSION;
   sendJsonResponse(request, 202, "Update check initiated.", data);
 }

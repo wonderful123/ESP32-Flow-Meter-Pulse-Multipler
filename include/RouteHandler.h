@@ -23,8 +23,7 @@ class RouteHandler {
   OTAUpdater& _otaUpdater;
   WebServerManager& _webServerManager;
 
-  void sendJsonResponse(AsyncWebServerRequest* request, int statusCode,
-                        const char* message, JsonObject& data);
+  void sendJsonResponse(AsyncWebServerRequest* request, int statusCode, const char* message, JsonDocument data);
 
   // Declaration of route handling methods
   void getCalibrationRecords(AsyncWebServerRequest* request);
