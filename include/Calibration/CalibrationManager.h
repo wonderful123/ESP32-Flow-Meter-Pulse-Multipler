@@ -7,6 +7,7 @@
 #include "CalibrationRecord.h"
 #include "EEPROMManager.h"
 #include "Settings.h"
+#include <ArduinoJson.h>
 
 class CalibrationManager {
  public:
@@ -22,8 +23,8 @@ class CalibrationManager {
                                unsigned long timestamp);
   void deleteCalibrationRecord(size_t id);
   void clearCalibrationRecords();
-  String getCalibrationRecordsJson() const;
-  String getCalibrationRecordJson(size_t id) const;
+  JsonDocument getCalibrationRecordsJson() const;
+  JsonDocument getCalibrationRecordJson(size_t id) const;
   bool findRecordById(size_t id, CalibrationRecord& outRecord) const;
   float getCalibrationFactor(float oilTemperature) const;
 
