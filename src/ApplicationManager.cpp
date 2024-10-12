@@ -9,19 +9,18 @@
 
 ApplicationManager::ApplicationManager()
     : server(80),
-      dns(),
-      wiFiUtils(server, dns),
       pulseCounter(PULSE_PIN),
       calibrationManager(),
       webServerManager(server, calibrationManager, pulseCounter),
+      wifiManager(server),
       scaledPulseGenerator(SCALED_OUTPUT_PIN, BASE_PULSE_DURATION_MICROS) {}
 
 void ApplicationManager::begin() {
-  wiFiUtils.begin();
   pulseCounter.begin();
   pulseCounter.startCounting();
   calibrationManager.begin();
   scaledPulseGenerator.updateScalingFactor(outputScalingFactor);
+  wifiManager.begin();
   webServerManager.begin();
 
   DebugUtils::logResetReason();
@@ -41,7 +40,7 @@ void ApplicationManager::loop() {
 
   // Update web server manager
   webServerManager.update();
-
+  wifiManager.monitorWiFi();
   scaledPulseGenerator.loop();
 }
 
