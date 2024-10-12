@@ -14,6 +14,7 @@
 #define OTA_FIRMWARE_URL "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/firmware.bin"
 #define OTA_FIRMWARE_MANIFEST_URL "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/version.json"
 #define MDNS_DOMAIN_NAME "pulse-scaler"
+#define AP_SSID_NAME "Pulse Scaler"
 
 #define DEFAULT_CALIBRATION_FACTOR 1.0
 #define CARDINAL_SPLINE_TENSION_FACTOR 0.5
