@@ -1,8 +1,6 @@
 // CalibrationManager.cpp
 #include "Calibration/CalibrationManager.h"
 
-#include <ArduinoJson.h>
-
 #include "Calibration/CalibrationRecord.h"
 #include "Calibration/CardinalSpline.h"
 
@@ -51,11 +49,17 @@ void CalibrationManager::updateCalibrationHistory() {
   _eepromManager.saveCalibrationRecords(_calibrationHistory);
 }
 
-String CalibrationManager::getCalibrationRecordsJson() const {
+JsonDocument CalibrationManager::getCalibrationRecordsJson() const {
+  // Create a JSON document with sufficient capacity
   JsonDocument doc;
 
+  // Create a JSON array to hold the records
+  JsonArray array = doc.to<JsonArray>();
+
+  // Iterate over the calibration history
   for (const auto& record : _calibrationHistory) {
-    JsonObject obj;
+    // Create a JSON object for each record
+    JsonObject obj = array.add<JsonObject>();
     obj["id"] = &record - &_calibrationHistory[0];  // Calculate index
     obj["oilTemperature"] = record.oilTemperature;
     obj["pulseCount"] = record.pulseCount;
@@ -64,9 +68,8 @@ String CalibrationManager::getCalibrationRecordsJson() const {
     obj["timestamp"] = record.timestamp;
   }
 
-  String json;
-  serializeJson(doc, json);
-  return json;
+  // Return the JSON document directly
+  return doc;
 }
 
 void CalibrationManager::deleteCalibrationRecord(size_t id) {
@@ -81,13 +84,14 @@ void CalibrationManager::clearCalibrationRecords() {
   _eepromManager.clearEEPROM();  // Also clear EEPROM records
 }
 
-String CalibrationManager::getCalibrationRecordJson(size_t id) const {
+JsonDocument CalibrationManager::getCalibrationRecordJson(size_t id) const {
+  JsonDocument doc;
+
   if (id >= _calibrationHistory.size()) {
-    return "{}";  // Return empty JSON object if id is out of range
+    return doc;  // Return empty JSON object if id is out of range
   }
 
   const auto& record = _calibrationHistory[id];
-  JsonDocument doc;
 
   doc["id"] = id;
   doc["oilTemperature"] = record.oilTemperature;
@@ -96,9 +100,7 @@ String CalibrationManager::getCalibrationRecordJson(size_t id) const {
   doc["observedOilVolume"] = record.observedOilVolume;
   doc["timestamp"] = record.timestamp;
 
-  String json;
-  serializeJson(doc, json);
-  return json;
+  return doc;
 }
 
 bool CalibrationManager::findRecordById(size_t id,
