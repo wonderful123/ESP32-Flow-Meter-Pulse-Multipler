@@ -1,12 +1,15 @@
 // PulseCounter.cpp
 #include "PulseCounter.h"
 
+#include "Logger.h"
+
 PulseCounter::PulseCounter(uint8_t pulsePin)
     : _pulsePin(pulsePin), _pulseCount(0) {}
 
 void PulseCounter::begin() {
   pinMode(_pulsePin, INPUT_PULLUP);
   startCounting();
+  LOG_INFO("Pulse counter initialized");
 }
 
 void IRAM_ATTR PulseCounter::handleInterrupt(void* arg) {
