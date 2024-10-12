@@ -2,20 +2,17 @@
 
 #include "Logger.h"
 
-CaptivePortal::CaptivePortal(WiFiManager& wifiManager)
-    : _server(80),
+CaptivePortal::CaptivePortal(WiFiManager& wifiManager, AsyncWebServer& server)
+    : _server(server),
       _wifiManager(wifiManager) {}  // Initialize with WiFiManager reference
 
 void CaptivePortal::begin() {
+  LOG_DEBUG("Starting captive portal...");
   setupRoutes();
-  _server.begin();
   LOG_INFO("Captive portal started.");
 }
 
-void CaptivePortal::stop() {
-  _server.end();
-  LOG_INFO("Captive portal stopped.");
-}
+void CaptivePortal::stop() { LOG_INFO("Captive portal stopped."); }
 
 void CaptivePortal::handleConnectionStatus(AsyncWebServerRequest* request) {
   if (WiFi.status() == WL_CONNECTED) {

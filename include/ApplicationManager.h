@@ -2,14 +2,13 @@
 #pragma once
 
 #include <Arduino.h>
-#include <ESPAsyncDNSServer.h>
 #include <ESPAsyncWebServer.h>
 
 #include "Calibration/CalibrationManager.h"
 #include "PulseCounter.h"
 #include "ScaledPulseGenerator.h"
 #include "WebServerManager.h"
-#include "WiFiUtils.h"
+#include "WiFi/WiFiManager.h"
 
 class ApplicationManager {
  public:
@@ -18,16 +17,14 @@ class ApplicationManager {
   void loop();
 
  private:
-  AsyncWebServer server{80};  // Shared server instance if needed
-  AsyncDNSServer dns;         // DNS server for the captive portal
-  WiFiUtils wiFiUtils;
+  AsyncWebServer server;
   PulseCounter pulseCounter;
   CalibrationManager calibrationManager;
   WebServerManager webServerManager;
+  WiFiManager wifiManager;
   ScaledPulseGenerator scaledPulseGenerator;
 
   float outputScalingFactor;
 
   void broadcastPulseCountAtInterval(const unsigned long interval);
-  void onCalibrationFactorUpdated(float calibrationFactor);
 };
