@@ -8,8 +8,7 @@ import {
 } from "store/actions/webSocketActions";
 
 const DEFAULT_CONFIG = {
-  url: "ws://localhost",
-  port: 8085,
+  port: 80,
   reconnectDelay: 1000,
   maxReconnectAttempts: 5,
   maxReconnectDelay: 60000,
@@ -33,8 +32,8 @@ const WebSocketService = {
     }
 
     const { url, port } = websocketConfig;
-    this.socket = new WebSocket(`${url}:${port}/ws`);
-    console.log(`Connecting to WebSocket at ${url}:${port}/ws`);
+    this.socket = new WebSocket(`/ws`);
+    console.log(`Connecting to WebSocket at /ws`);
     this.attachEventHandlers();
   },
 
