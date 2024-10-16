@@ -1,6 +1,18 @@
 // FirmwareModel.js
 import m from "mithril";
 import WebSocketService from "services/WebSocketService";
+import config from "config";
+
+const buildUrl = (endpoint, params = null) => {
+  let url = `${config.API.prefix}/${config.API.version}${endpoint}`;
+
+  if (params) {
+    const queryParams = new URLSearchParams(params).toString();
+    url += `?${queryParams}`;
+  }
+
+  return url;
+};
 
 const FirmwareModel = {
   currentVersion: "Fetching...",
@@ -10,11 +22,12 @@ const FirmwareModel = {
   progress: 0, // Initialize progress at 0%
 
   getFirmwareVersion: function () {
+    console.log(`Fetching firmware version from ${buildUrl("/firmware-version")}`);
     FirmwareModel.isLoading = true;
     m.request({
-        method: "GET",
-        url: "api/firmware-version",
-      })
+      method: "GET",
+      url: buildUrl("/firmware-version"),
+    })
       .then(() => {
         // The server will initiate the update check via WebSocket
         FirmwareModel.isLoading = false;
@@ -31,16 +44,16 @@ const FirmwareModel = {
     // Send a WebSocket message to trigger the update check on the server
     FirmwareModel.isLoading = true;
     WebSocketService.sendMessage({
-      action: "checkForUpdate"
+      action: "checkForUpdate",
     });
   },
 
   performOTAUpdate: function () {
     // Trigger the OTA update on the server
     m.request({
-        method: "POST",
-        url: "api/firmware-update",
-      })
+      method: "POST",
+      url: buildUrl("/firmware-update"),
+    })
       .then(() => {
         // The server will initiate the OTA update process via WebSocket
         m.redraw();
@@ -52,7 +65,7 @@ const FirmwareModel = {
   },
 
   initWebSocket() {
-    WebSocketService.registerHandler((message) => {
+    WebSocketService.registerHandler(message => {
       switch (message.type) {
         case "status":
           FirmwareModel.updateStatus = message.message;
@@ -83,7 +96,7 @@ const FirmwareModel = {
     });
 
     // Automatically connect; adjust URL as needed
-    WebSocketService.connect('ws://' + window.location.hostname + '/ws');
+    WebSocketService.connect("ws://" + window.location.hostname + "/ws");
   },
 };
 
