@@ -4,8 +4,8 @@
 #include <ESPAsyncWebServer.h>
 
 #include "Calibration/CalibrationManager.h"
+#include "InputPulseMonitor.h"
 #include "OTAUpdater.h"
-#include "PulseCounter.h"
 
 // Forward declaration
 class WebServerManager;
@@ -13,17 +13,20 @@ class WebServerManager;
 class RouteHandler {
  public:
   RouteHandler(CalibrationManager& calibrationManager,
-               PulseCounter& pulseCounter, OTAUpdater& otaUpdater,
+               InputPulseMonitor& inputPulseMonitor, OTAUpdater& otaUpdater,
                WebServerManager& webServerManager);
   void registerRoutes(AsyncWebServer& server);
 
  private:
   CalibrationManager& _calibrationManager;
-  PulseCounter& _pulseCounter;
+  InputPulseMonitor& _inputPulseMonitor;
   OTAUpdater& _otaUpdater;
   WebServerManager& _webServerManager;
 
-  void sendJsonResponse(AsyncWebServerRequest* request, int statusCode, const char* message, JsonDocument data);
+  // Helper functions
+  void sendJsonResponse(AsyncWebServerRequest* request, int statusCode,
+                        const char* message, JsonDocument data);
+  String buildFullPath(const char* path);
 
   // Declaration of route handling methods
   void getCalibrationRecords(AsyncWebServerRequest* request);

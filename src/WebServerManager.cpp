@@ -6,21 +6,21 @@
 #include "Arduino.h"
 #include "ESPmDNS.h"
 #include "Settings.h"
+#include "WiFi.h"
 #include "logger.h"
 
 WebServerManager::WebServerManager(AsyncWebServer& server,
                                    CalibrationManager& calibrationManager,
-                                   PulseCounter& pulseCounter)
+                                   InputPulseMonitor& inputPulseMonitor)
     : _calibrationManager(calibrationManager),
-      _pulseCounter(pulseCounter),
-      _routeHandler(calibrationManager, pulseCounter, _otaUpdater, *this),
+      _inputPulseMonitor(inputPulseMonitor),
+      _routeHandler(calibrationManager, inputPulseMonitor, _otaUpdater, *this),
       _server(server),
       _webSocketServer(WEBSOCKET_PORT),
       _otaUpdater(_webSocketServer),
       _fsManager() {}
 
 void WebServerManager::begin() {
-  _server.begin();
   _webSocketServer.begin(&_server);
   if (_fsManager.mountFileSystem()) {
     _routeHandler.registerRoutes(_server);
@@ -28,6 +28,7 @@ void WebServerManager::begin() {
   LOG_INFO("HTTP server started at IP address: {} ***",
            WiFi.localIP().toString().c_str());
   startMDNS();
+  // _server.begin();
   _otaUpdater.begin();
 }
 
@@ -39,12 +40,18 @@ void WebServerManager::broadcastWebsocketMessage(String& type,
 }
 
 void WebServerManager::startMDNS() {
-  if (!MDNS.begin(MDNS_DOMAIN_NAME)) {
+  WiFi.begin("GretaThurnberg", "trump2020");
+  WiFi.mode(WIFI_AP_STA);
+  if (!MDNS.begin("test")) {
     LOG_ERROR("Error setting up MDNS responder");
   }
-  MDNS.addService("http", "tcp", 80);
-  LOG_INFO("=================================");
-  LOG_INFO("mDNS responder started at:");
-  LOG_INFO("http://{}.local", MDNS_DOMAIN_NAME);
-  LOG_INFO("=================================");
+  bool result = MDNS.addService("http", "tcp", 80);
+  if (result) {
+    LOG_INFO("=================================");
+    LOG_INFO("mDNS responder started at:");
+    LOG_INFO("http://{}.local", MDNS_DOMAIN_NAME);
+    LOG_INFO("=================================");
+  } else {
+    LOG_ERROR("Error setting up MDNS responder. Result: {}", result);
+  }
 }

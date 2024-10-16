@@ -9,68 +9,70 @@
 #include "WebServerManager.h"
 
 RouteHandler::RouteHandler(CalibrationManager& calibrationManager,
-                           PulseCounter& pulseCounter, OTAUpdater& otaUpdater,
+                           InputPulseMonitor& inputPulseMonitor, OTAUpdater& otaUpdater,
                            WebServerManager& webServerManager)
     : _calibrationManager(calibrationManager),
-      _pulseCounter(pulseCounter),
+      _inputPulseMonitor(inputPulseMonitor),
       _otaUpdater(otaUpdater),
       _webServerManager(webServerManager) {}
 
+// Helper function to build full path
+String RouteHandler::buildFullPath(const char* path) {
+  return String(API_PREFIX) + "/" + API_VERSION + path;
+}
+
+// Register routes using a data structure and loop
 void RouteHandler::registerRoutes(AsyncWebServer& server) {
-  server.on("/api/calibration-records", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->getCalibrationRecords(request);
-            });
-  server.on("/api/calibration-records", HTTP_POST,
-            [this](AsyncWebServerRequest* request) {
-              this->addCalibrationRecord(request);
-            });
-  server.on("^/api/calibration-records/(\\d+)$", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->getCalibrationRecord(request);
-            });
-  server.on("^/api/calibration-records/(\\d+)$", HTTP_PUT,
-            [this](AsyncWebServerRequest* request) {
-              this->editCalibrationRecord(request);
-            });
-  server.on("^/api/calibration-records/(\\d+)$", HTTP_DELETE,
-            [this](AsyncWebServerRequest* request) {
-              this->deleteCalibrationRecord(request);
-            });
+  struct Route {
+    const char* path;
+    WebRequestMethod method;
+    ArRequestHandlerFunction handler;
+  };
 
-  server.on("/api/calibration/start", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->startCalibration(request);
-            });
-  server.on("/api/calibration/stop", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->stopCalibration(request);
-            });
-  server.on("/api/calibration/reset", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->resetCalibration(request);
-            });
+  // Define all routes in an array
+  Route routes[] = {
+      {"/calibration-records", HTTP_GET,
+       std::bind(&RouteHandler::getCalibrationRecords, this,
+                 std::placeholders::_1)},
+      {"/calibration-records", HTTP_POST,
+       std::bind(&RouteHandler::addCalibrationRecord, this,
+                 std::placeholders::_1)},
+      {"/calibration-records/{id}", HTTP_GET,
+       std::bind(&RouteHandler::getCalibrationRecord, this,
+                 std::placeholders::_1)},
+      {"/calibration-records/{id}", HTTP_PUT,
+       std::bind(&RouteHandler::editCalibrationRecord, this,
+                 std::placeholders::_1)},
+      {"/calibration-records/{id}", HTTP_DELETE,
+       std::bind(&RouteHandler::deleteCalibrationRecord, this,
+                 std::placeholders::_1)},
+      {"/calibration/start", HTTP_GET,
+       std::bind(&RouteHandler::startCalibration, this, std::placeholders::_1)},
+      {"/calibration/stop", HTTP_GET,
+       std::bind(&RouteHandler::stopCalibration, this, std::placeholders::_1)},
+      {"/calibration/reset", HTTP_GET,
+       std::bind(&RouteHandler::resetCalibration, this, std::placeholders::_1)},
+      {"/firmware-version", HTTP_GET,
+       std::bind(&RouteHandler::getFirmwareVersion, this,
+                 std::placeholders::_1)},
+      {"/firmware-update", HTTP_POST,
+       std::bind(&RouteHandler::handleOTAUpdate, this, std::placeholders::_1)},
+  };
 
-  server.on("/api/firmware-version", HTTP_GET,
-            [this](AsyncWebServerRequest* request) {
-              this->getFirmwareVersion(request);
-            });
-  server.on("/api/firmware-update", HTTP_POST,
-            [this](AsyncWebServerRequest* request) {
-              this->handleOTAUpdate(request);
-            });
+  // Register all routes in a loop
+  for (const auto& route : routes) {
+    server.on(buildFullPath(route.path).c_str(), route.method, route.handler);
+    LOG_DEBUG("Registered route: {}", buildFullPath(route.path).c_str());
+  }
 
-  server.onNotFound([this](AsyncWebServerRequest* request) {
-    this->handleNotFound(request);
-  });
+  // Not found handler (doesn't require prefix)
+  server.onNotFound(
+      std::bind(&RouteHandler::handleNotFound, this, std::placeholders::_1));
 
   // Serve static files from LittleFS
   server.serveStatic("/", LittleFS, "/www/")
       .setDefaultFile("index.html")
-      .setCacheControl("max-age=3600")
-      .setFilter([](AsyncWebServerRequest* request) {
-        return !request->url().endsWith(".gz");  // Ignore direct .gz requests
-      });
+      .setCacheControl("max-age=3600");
 
   LOG_INFO("Routes registered");
 }
@@ -89,7 +91,7 @@ void RouteHandler::sendJsonResponse(AsyncWebServerRequest* request,
 
   String responseString;
   serializeJson(jsonResponse, responseString);
-  // request->send(statusCode, "application/json", responseString);
+  request->send(statusCode, "application/json", responseString);
 }
 
 // Handle GET /api/calibration-records
@@ -107,10 +109,10 @@ void RouteHandler::getCalibrationRecord(AsyncWebServerRequest* request) {
     sendJsonResponse(request, 400, "Missing ID parameter.");
     return;
   }
-  
+
   int id = request->getParam("id")->value().toInt();
   JsonDocument doc = _calibrationManager.getCalibrationRecordJson(id);
-  
+
   // Handle case where the calibration record exists
   if (!doc.isNull()) {
     LOG_INFO("Calibration record found for ID: {}", id);
@@ -147,7 +149,7 @@ void RouteHandler::addCalibrationRecord(AsyncWebServerRequest* request) {
                                              timestamp);
 
     sendJsonResponse(request, 201, "Calibration record added successfully.");
-    _pulseCounter.resetPulseCount();  // Reset for the next calibration
+    _inputPulseMonitor.resetPulseCount();  // Reset for the next calibration
   } else {
     String missingFields = "";
     if (!request->hasParam("oilTemperature"))
@@ -208,8 +210,9 @@ void RouteHandler::deleteCalibrationRecord(AsyncWebServerRequest* request) {
 
 // Handle GET /api/calibration/start
 void RouteHandler::startCalibration(AsyncWebServerRequest* request) {
-  _pulseCounter.resetPulseCount();  // Reset the pulse count
-  _pulseCounter.startCounting();    // Start counting pulses
+  LOG_INFO("Starting calibration...");
+  _inputPulseMonitor.resetPulseCount();  // Reset the pulse count
+  _inputPulseMonitor.startCounting();    // Start counting pulses
 
   JsonDocument data;
   data["pulseCount"] = 0;
@@ -219,8 +222,9 @@ void RouteHandler::startCalibration(AsyncWebServerRequest* request) {
 
 // Handle GET /api/calibration/stop
 void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
-  _pulseCounter.stopCounting();
-  unsigned long pulseCount = _pulseCounter.getPulseCount();
+  LOG_INFO("Stopping calibration...");
+  _inputPulseMonitor.stopCounting();
+  unsigned long pulseCount = _inputPulseMonitor.getPulseCount();
 
   JsonDocument data;
   data["pulseCount"] = pulseCount;
@@ -229,12 +233,14 @@ void RouteHandler::stopCalibration(AsyncWebServerRequest* request) {
 
 // Handle GET /api/calibration/reset
 void RouteHandler::resetCalibration(AsyncWebServerRequest* request) {
-  _pulseCounter.resetPulseCount();
+  LOG_INFO("Resetting calibration...");
+  _inputPulseMonitor.resetPulseCount();
   request->send(200, "text/plain", "Calibration counter reset.");
 }
 
 // Handle GET /api/firmware-version
 void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
+  LOG_INFO("Fetching firmware version...");
   _otaUpdater.checkForUpdate();
 
   JsonDocument data;
@@ -244,6 +250,7 @@ void RouteHandler::getFirmwareVersion(AsyncWebServerRequest* request) {
 
 // Handle POST /api/firmware-update
 void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
+  LOG_INFO("Performing OTA update...");
   if (request->hasArg("url")) {
     _otaUpdater.performOTAUpdate();
     request->send(200, "text/plain", "Attempting to perform OTA update...");
@@ -254,6 +261,7 @@ void RouteHandler::handleOTAUpdate(AsyncWebServerRequest* request) {
 
 // Handle 404 errors
 void RouteHandler::handleNotFound(AsyncWebServerRequest* request) {
+  LOG_DEBUG("Request not found: {}", request->url());
   request->send(404, "text/html",
                 "<h1>404: Not Found</h1><p>The requested file: " +
                     request->url() + " was not found.</p>");
