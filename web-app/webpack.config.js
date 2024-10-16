@@ -93,6 +93,12 @@ module.exports = env => {
       }),
       new webpack.DefinePlugin({
         "process.env.WEBSOCKET_PORT": JSON.stringify(isProduction ? 80 : DEVELOPMENT_WEBSOCKET_PORT),
+        "process.env.API_BASE_URL": JSON.stringify(
+          isProduction ? "http://localhost" : "http://localhost:3000"
+        ),
+        "process.env.WEBSOCKET_URL": JSON.stringify(
+          isProduction ? "ws://localhost" : `ws://localhost:${DEVELOPMENT_WEBSOCKET_PORT}`
+        ),
       }),
       ...(isProduction
         ? [
