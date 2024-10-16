@@ -1,6 +1,4 @@
 // main.cpp
-#define _ESPASYNC_WIFIMGR_LOGLEVEL_ 1
-// #include <ESPAsync_WiFiManager.h>  // Declared here to avoid multiple linking errors specified in docs
 #include <HardwareSerial.h>
 
 #include "ApplicationManager.h"
