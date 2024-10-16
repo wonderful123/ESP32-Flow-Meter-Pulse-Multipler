@@ -2,7 +2,7 @@ import m from "mithril";
 import config from "config";
 
 const buildUrl = (endpoint, params = null) => {
-  let url = `${config.API.baseURL}:${config.API.port}/${config.API.prefix}/${config.API.version}${endpoint}`;
+  let url = `${config.API.prefix}/${config.API.version}${endpoint}`;
 
   if (params) {
     const queryParams = new URLSearchParams(params).toString();
