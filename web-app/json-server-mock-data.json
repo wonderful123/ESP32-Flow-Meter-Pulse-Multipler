@@ -75,5 +75,9 @@
   ],
   "firmware": {
     "currentVersion": "1.0.0"
+  },
+  "calibrationSettings": {
+    "mode": "fixed",
+    "fixedCalibrationFactor": 2.6
   }
 }
