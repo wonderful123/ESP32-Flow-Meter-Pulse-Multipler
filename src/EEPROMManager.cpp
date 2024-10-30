@@ -1,15 +1,49 @@
 // EEPROMManager.cpp
 #include "EEPROMManager.h"
 
-EEPROMManager::EEPROMManager(size_t maxRecords) : _maxRecords(maxRecords) {}
+EEPROMManager::EEPROMManager(size_t maxRecords)
+    : _maxRecords(maxRecords),
+      _mode(CalibrationMode::TemperatureCompensated),
+      _fixedCalibrationFactor(DEFAULT_CALIBRATION_FACTOR) {}
 
 void EEPROMManager::begin() {
   EEPROM.begin(EEPROM_SIZE);
   EEPROMHeader header;
   EEPROM.get(0, header);
   if (header.marker != EEPROM_EMPTY_MARKER && header.marker != 0) {
+    _mode = static_cast<CalibrationMode>(header.mode);
+    _fixedCalibrationFactor = header.fixedCalibrationFactor;
+  } else {
     clearEEPROM();
   }
+}
+
+CalibrationMode EEPROMManager::getCalibrationMode() const { return _mode; }
+
+float EEPROMManager::getFixedCalibrationFactor() const {
+  return _fixedCalibrationFactor;
+}
+
+void EEPROMManager::setCalibrationMode(CalibrationMode mode) {
+  _mode = mode;
+
+  // Update the EEPROM header
+  EEPROMHeader header;
+  EEPROM.get(0, header);
+  header.mode = static_cast<uint8_t>(_mode);
+  EEPROM.put(0, header);
+  EEPROM.commit();
+}
+
+void EEPROMManager::setFixedCalibrationFactor(float factor) {
+  _fixedCalibrationFactor = factor;
+
+  // Update the EEPROM header
+  EEPROMHeader header;
+  EEPROM.get(0, header);
+  header.fixedCalibrationFactor = _fixedCalibrationFactor;
+  EEPROM.put(0, header);
+  EEPROM.commit();
 }
 
 bool EEPROMManager::saveCalibrationRecord(size_t index,
@@ -33,6 +67,11 @@ bool EEPROMManager::saveCalibrationRecord(size_t index,
 
 bool EEPROMManager::saveCalibrationRecords(
     const std::vector<CalibrationRecord>& records) {
+  // Save calibration mode and fixed factor
+  EEPROMHeader header = {EEPROM_EMPTY_MARKER, static_cast<uint8_t>(_mode),
+                         _fixedCalibrationFactor, records.size()};
+  EEPROM.put(0, header);
+
   if (records.size() > _maxRecords) return false;
 
   for (size_t i = 0; i < records.size(); i++) {
