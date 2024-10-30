@@ -161,9 +161,12 @@ module.exports = env => {
               },
             },
             {
-              loader: "sass-loader",
+              loader: 'sass-loader',
               options: {
-                sourceMap: !isProduction,
+                implementation: require('sass'),
+                sassOptions: {
+                  fiber: false,
+                },
               },
             },
           ],
