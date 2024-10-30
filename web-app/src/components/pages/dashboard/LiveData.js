@@ -9,7 +9,7 @@ const LiveData = {
 
   view: function () {
     return m("div.box", [
-      m("h2.title.is-5", "Live Data"),
+      m("h2.title.is-5", "Live Data (Not implemented)"),
       m("div.content", [
         m("p", [m("strong", "Flow Rate: "), m("span", LiveData.data.flowRate + " liters/min")]),
         m("p", [m("strong", "Pulse Count: "), m("span", LiveData.data.pulseCount)]),
