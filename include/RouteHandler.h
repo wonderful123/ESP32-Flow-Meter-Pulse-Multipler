@@ -25,19 +25,24 @@ class RouteHandler {
 
   // Helper functions
   void sendJsonResponse(AsyncWebServerRequest* request, int statusCode,
-                        const char* message, JsonDocument data);
-  String buildFullPath(const char* path);
+                        const char* message,
+                        const JsonObject& data = JsonObject()) const;
+  String buildFullPath(const char* path) const;
 
-  // Declaration of route handling methods
-  void getCalibrationRecords(AsyncWebServerRequest* request);
-  void getCalibrationRecord(AsyncWebServerRequest* request);
-  void addCalibrationRecord(AsyncWebServerRequest* request);
-  void editCalibrationRecord(AsyncWebServerRequest* request);
+  // Route handling methods
+  void getCalibrationMode(AsyncWebServerRequest* request) const;
+  void setCalibrationMode(AsyncWebServerRequest* request, JsonVariant& json);
+  void getFixedFactor(AsyncWebServerRequest* request) const;
+  void setFixedFactor(AsyncWebServerRequest* request, JsonVariant& json);
+  void getCalibrationRecords(AsyncWebServerRequest* request) const;
+  void getCalibrationRecord(AsyncWebServerRequest* request) const;
+  void addCalibrationRecord(AsyncWebServerRequest* request, JsonVariant& json);
+  void editCalibrationRecord(AsyncWebServerRequest* request, JsonVariant& json);
   void deleteCalibrationRecord(AsyncWebServerRequest* request);
   void startCalibration(AsyncWebServerRequest* request);
   void stopCalibration(AsyncWebServerRequest* request);
   void resetCalibration(AsyncWebServerRequest* request);
   void getFirmwareVersion(AsyncWebServerRequest* request);
-  void handleOTAUpdate(AsyncWebServerRequest* request);
+  void handleOTAUpdate(AsyncWebServerRequest* request, JsonVariant& json);
   void handleNotFound(AsyncWebServerRequest* request);
 };
