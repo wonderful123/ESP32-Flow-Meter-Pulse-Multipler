@@ -5,7 +5,7 @@ const BaseIcon = {
   view: function (vnode) {
     const size = vnode.attrs.size || 20; // Default size is 20px
 
-    return m("span.icon", {
+    return m("span", {
         style: `width: ${size}px; height: ${size}px;` + (vnode.attrs.style || ""),
         'data-tooltip': vnode.attrs['data-tooltip'],
         onclick: vnode.attrs.onclick
