@@ -32,8 +32,9 @@ const WebSocketService = {
     }
 
     const { url, port } = websocketConfig;
-    this.socket = new WebSocket(`/ws`);
-    console.log(`Connecting to WebSocket at /ws`);
+    this.socket = new WebSocket(`${url}:${port}/ws`);
+    console.log(`Connected to socket at ${this.socket.url}`, this.socket);
+    console.log(`Connecting to WebSocket at ${url}:${port}/ws`);
     this.attachEventHandlers();
   },
 
