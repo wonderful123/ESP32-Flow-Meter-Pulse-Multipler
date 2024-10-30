@@ -35,7 +35,7 @@ const APIService = {
     const requestOptions = {
       method,
       url,
-      body: data ? JSON.stringify(data) : null,
+      body: data ? data : null,
       headers,
       withCredentials: options.withCredentials || false, // Allows cookies/auth to be sent
       timeout: options.timeout || 15000, // Timeout after 15 seconds
