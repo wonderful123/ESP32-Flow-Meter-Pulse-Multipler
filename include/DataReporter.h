@@ -3,6 +3,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include "InputPulseMonitor.h"
 #include "OutputPulseGenerator.h"
@@ -14,7 +15,7 @@ class DataReporter {
                OutputPulseGenerator* outputPulseGenerator,
                TemperatureSensor* temperatureSensor);
   void begin();
-  String getReportData();
+  JsonDocument getReportData();
 
  private:
   InputPulseMonitor* _inputPulseMonitor;
