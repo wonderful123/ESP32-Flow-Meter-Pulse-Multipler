@@ -5,9 +5,9 @@
 
 #include "Arduino.h"
 #include "ESPmDNS.h"
+#include "Logger.h"
 #include "Settings.h"
 #include "WiFi.h"
-#include "logger.h"
 
 WebServerManager::WebServerManager(AsyncWebServer& server,
                                    CalibrationManager& calibrationManager,
