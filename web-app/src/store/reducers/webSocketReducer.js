@@ -45,7 +45,7 @@ const websocketReducer = (state = initialState, action) => {
         return state; // Return the current state if the message format is unexpected
       }
       switch (action.payload.type) {
-        case "pulseCount":
+        case "pulseUpdate":
           return {
             ...state,
             data: action.payload.data,
