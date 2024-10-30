@@ -1,10 +1,13 @@
-// PulseCountService.js
-import Stream from 'mithril/stream';
-import WebSocketService from './WebSocketService';
+import Stream from "mithril/stream";
+import WebSocketService from "./WebSocketService";
 
 class PulseCountService {
   constructor() {
-    this.pulseCount = Stream(0); // Initialize pulseCount as a stream with a default value of 0
+    this.inputPulseStream = Stream(0);
+    this.outputPulseStream = Stream(0);
+    this.inputFrequencyStream = Stream(0);
+    this.outputFrequencyStream = Stream(0);
+
     WebSocketService.registerHandler(this.handleMessage.bind(this));
   }
 
@@ -13,17 +16,46 @@ class PulseCountService {
   }
 
   handleMessage(message) {
-    if (message.type === 'pulseCount') {
-      this.pulseCount(message.data); // Update the pulseCount stream with the new value
+    console.log(message);
+    if (message.type === "pulseUpdate") {
+      const { inputPulseCount, outputPulseCount, inputFrequency, outputFrequency } = message.data;
+      this.inputPulseStream(inputPulseCount);
+      this.outputPulseStream(outputPulseCount);
+      this.inputFrequencyStream(inputFrequency);
+      this.outputFrequencyStream(outputFrequency);
     }
   }
 
-  getPulseCountStream() {
-    return this.pulseCount;
+  getInputPulseCountStream() {
+    return this.inputPulseStream;
   }
 
-  getPulseCount() {
-    return this.pulseCount();
+  getOutputPulseCountStream() {
+    return this.outputPulseStream;
+  }
+
+  getInputFrequencyStream() {
+    return this.inputFrequencyStream;
+  }
+
+  getOutputFrequencyStream() {
+    return this.outputFrequencyStream;
+  }
+
+  getInputPulseCount() {
+    return this.inputPulseStream();
+  }
+
+  getOutputPulseCount() {
+    return this.outputPulseStream();
+  }
+
+  getInputFrequency() {
+    return this.inputFrequencyStream();
+  }
+
+  getOutputFrequency() {
+    return this.outputFrequencyStream();
   }
 }
 
