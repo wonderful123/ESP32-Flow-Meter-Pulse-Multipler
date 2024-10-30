@@ -39,6 +39,10 @@ void WebServerManager::broadcastWebsocketMessage(String& type,
   _webSocketServer.broadcastMessage(type, message);
 }
 
+void WebServerManager::broadcastWebsocketJson(String& type, JsonDocument json) {
+  _webSocketServer.broadcastJsonData(type, json);
+}
+
 void WebServerManager::startMDNS() {
   WiFi.begin("GretaThurnberg", "trump2020");
   WiFi.mode(WIFI_AP_STA);
