@@ -1,25 +1,46 @@
 // CalibrationPage.js
+
 import m from "mithril";
 import SectionContainer from "components/common/SectionContainer";
 import TitleAndSubtitle from "components/common/TitleAndSubtitle";
-// import CalibrationForm from "./calibration-form/CalibrationForm"
-// import CalibrationRecords from "./calibration-records/CalibrationRecords";
-// import CalibrationFactor from "./CalibrationFactor";
-import PulseCountDisplay from "components/common/pulse-counter/PulseCount";
-import CalibrationControl from "components/common/pulse-counter/CalibrationControl";
+import ModeSelector from "./ModeSelector";
+import CalibrationForm from "./calibration-form/CalibrationForm";
+import CalibrationService from "services/CalibrationService";
+import FixedCalibrationDisplay from "components/common/FixedCalibrationDisplay";
+import Chart from "./calibration-records/Chart";
+import Table from "./calibration-records/Table";
 
 const CalibrationPage = {
-  view: function () {
+  selectedMode: "fixed",
+
+  oninit() {
+    // Optionally, initialize selectedMode from the backend
+    CalibrationService.getCalibrationMode().then(data => {
+      this.selectedMode = data.mode;
+      m.redraw();
+    });
+  },
+
+  handleModeChange(mode) {
+    this.selectedMode = mode;
+    CalibrationService.setCalibrationMode(mode).then(() => {
+      console.log(`Calibration mode set to ${mode}`);
+    });
+  },
+
+  view() {
     return m(SectionContainer, [
       m(TitleAndSubtitle, {
         title: "Pulse Scaling Calibration",
         subtitle: "[Pins: Input D3 and Output D7]",
       }),
-      // m(CalibrationFactor), // Display the current calibration factor
-      m(PulseCountDisplay), // Display the current pulse count
-      m(CalibrationControl),
-      m("hr"),
-      // m(CalibrationRecords), // List of existing calibration records
+      m(ModeSelector, {
+        selectedMode: this.selectedMode,
+        onModeChange: this.handleModeChange.bind(this),
+      }),
+      this.selectedMode === "fixed" ? m(FixedCalibrationDisplay) : null,
+      this.selectedMode === "temperature" ? [m("hr"),m(Chart), m("hr"), m(Table)] : null,
+      m(CalibrationForm, { selectedMode: this.selectedMode }),
     ]);
   },
 };
