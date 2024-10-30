@@ -1,13 +1,35 @@
 // CalibrationController.js
-import CalibrationService from '../services/CalibrationService';
+import CalibrationService from "services/CalibrationService";
 import {
   fetchCalibrationRecords,
   createCalibrationRecord,
   updateCalibrationRecord,
   deleteCalibrationRecord,
-} from '../store/actions/calibrationActions';
+} from "../store/actions/calibrationActions";
 
 const CalibrationController = {
+  getCalibrationMode: async (req, res) => {
+    console.debug("CalibrationController getCalibrationMode called");
+    try {
+      const mode = await CalibrationService.getCalibrationMode();
+      console.debug("Calibration mode fetched:", mode);
+      res.status(200).json({ mode });
+    } catch (error) {
+      console.error("Error in getCalibrationMode:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  setCalibrationMode: async (req, res) => {
+    try {
+      const { mode } = req.body;
+      await CalibrationService.setCalibrationMode(mode);
+      res.status(200).json({ message: "Calibration mode updated successfully." });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
   getCalibrationRecords: async (req, res) => {
     try {
       const calibrationRecords = await CalibrationService.getCalibrationRecords();
@@ -15,7 +37,7 @@ const CalibrationController = {
       res.status(200).json(calibrationRecords);
     } catch (error) {
       res.status(500).json({
-        error: error.message
+        error: error.message,
       });
     }
   },
@@ -27,7 +49,7 @@ const CalibrationController = {
       res.status(201).json(calibrationRecord);
     } catch (error) {
       res.status(500).json({
-        error: error.message
+        error: error.message,
       });
     }
   },
@@ -39,7 +61,7 @@ const CalibrationController = {
       res.status(200).json(calibrationRecord);
     } catch (error) {
       res.status(500).json({
-        error: error.message
+        error: error.message,
       });
     }
   },
@@ -51,7 +73,7 @@ const CalibrationController = {
       res.sendStatus(204);
     } catch (error) {
       res.status(500).json({
-        error: error.message
+        error: error.message,
       });
     }
   },
