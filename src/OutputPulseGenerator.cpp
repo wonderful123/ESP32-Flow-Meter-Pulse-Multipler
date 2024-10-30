@@ -3,13 +3,15 @@
 
 OutputPulseGenerator::OutputPulseGenerator(
     uint8_t outputPin, CalibrationManager* calibrationManager,
-    InputPulseMonitor* inputPulseMonitor)
+    InputPulseMonitor* inputPulseMonitor, TemperatureSensor* temperatureSensor)
     : _outputPin(outputPin),
       _calibrationManager(calibrationManager),
       _inputPulseMonitor(inputPulseMonitor),
+      _temperatureSensor(temperatureSensor),  // Initialize temperature sensor
       _scalingFactor(1.0),
       _outputFrequency(0.0),
       _outputPulseCount(0),
+      _totalOutputPulseCount(0),
       _lastUpdateTime(0),
       _pulseAccumulator(0.0),
       _lastInputPulseCount(0) {}
@@ -21,20 +23,23 @@ void OutputPulseGenerator::begin() {
 }
 
 void OutputPulseGenerator::update() {
-  unsigned long currentTime = millis();
   unsigned long inputPulseCount = _inputPulseMonitor->getPulseCount();
   unsigned long pulseDifference = inputPulseCount - _lastInputPulseCount;
 
   if (pulseDifference > 0) {
-    float temperature = 123; //_calibrationManager->getCurrentTemperature();
-    _scalingFactor = _calibrationManager->getCalibrationFactor(temperature);
+    float scalingFactor;
+    if (_calibrationManager->getCalibrationMode() == CalibrationMode::Fixed) {
+      scalingFactor = _calibrationManager->getFixedCalibrationFactor();
+    } else {
+      float temperature = _temperatureSensor->getCurrentTemperature();
+      scalingFactor = _calibrationManager->getCalibrationFactor(temperature);
+    }
 
     // Calculate the scaled number of pulses
-    float scaledPulses = pulseDifference * _scalingFactor + _pulseAccumulator;
+    float scaledPulses = pulseDifference * scalingFactor + _pulseAccumulator;
     unsigned long pulsesToGenerate = static_cast<unsigned long>(scaledPulses);
     _pulseAccumulator = scaledPulses - pulsesToGenerate;
 
-    // Generate output pulses
     for (unsigned long i = 0; i < pulsesToGenerate; i++) {
       generateOutputPulse();
       _outputPulseCount++;
@@ -42,19 +47,19 @@ void OutputPulseGenerator::update() {
 
     _lastInputPulseCount = inputPulseCount;
   }
-
-  // Update output frequency every second
-  if (currentTime - _lastUpdateTime >= 1000) {
-    _outputFrequency = _outputPulseCount;
-    _outputPulseCount = 0;
-    _lastUpdateTime = currentTime;
-  }
 }
 
+// Increment _totalOutputPulseCount in generateOutputPulse()
 void OutputPulseGenerator::generateOutputPulse() {
   digitalWrite(_outputPin, HIGH);
   delayMicroseconds(100);  // Adjust pulse width as needed
   digitalWrite(_outputPin, LOW);
+  _totalOutputPulseCount++;  // Increment total output pulse count
 }
 
 float OutputPulseGenerator::getOutputFrequency() { return _outputFrequency; }
+
+// Implement the getter method
+unsigned long OutputPulseGenerator::getTotalOutputPulseCount() const {
+  return _totalOutputPulseCount;
+}
