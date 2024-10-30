@@ -1,36 +1,47 @@
 // CalibrationManager.h
 #pragma once
 
+#include <ArduinoJson.h>
+
 #include <functional>
 #include <vector>
 
 #include "CalibrationRecord.h"
 #include "EEPROMManager.h"
 #include "Settings.h"
-#include <ArduinoJson.h>
 
 class CalibrationManager {
  public:
   explicit CalibrationManager(size_t maxRecords = MAX_CALIBRATION_RECORDS);
   void begin();
+
+  void setCalibrationMode(CalibrationMode mode);
+  CalibrationMode getCalibrationMode() const;
+
+  void setFixedCalibrationFactor(float factor);
+  float getFixedCalibrationFactor() const;
+
   void addCalibrationRecord(float oilTemperature, unsigned long pulseCount,
                             float targetOilVolume, float observedOilVolume,
                             unsigned long timestamp);
-  std::vector<CalibrationRecord> getCalibrationHistory() const;
-  void updateCalibrationRecord(size_t id, float oilTemperature,
+
+  bool updateCalibrationRecord(size_t id, float oilTemperature,
                                unsigned long pulseCount, float targetOilVolume,
                                float observedOilVolume,
                                unsigned long timestamp);
-  void deleteCalibrationRecord(size_t id);
-  void clearCalibrationRecords();
-  JsonDocument getCalibrationRecordsJson() const;
-  JsonDocument getCalibrationRecordJson(size_t id) const;
-  bool findRecordById(size_t id, CalibrationRecord& outRecord) const;
+
+  bool deleteCalibrationRecord(size_t id);
+
   float getCalibrationFactor(float oilTemperature) const;
 
+  JsonDocument getCalibrationRecordsJson() const;
+  JsonDocument getCalibrationRecordJson(size_t id) const;
+
  private:
-  std::vector<CalibrationRecord> _calibrationHistory;
   EEPROMManager _eepromManager;
+  CalibrationMode _mode;
+  float _fixedCalibrationFactor;
+  std::vector<CalibrationRecord> _calibrationHistory;
   std::vector<float> _interpolationCoefficientsA;
   std::vector<float> _interpolationCoefficientsB;
   std::vector<float> _interpolationCoefficientsC;

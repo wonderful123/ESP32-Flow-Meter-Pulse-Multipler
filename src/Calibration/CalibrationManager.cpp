@@ -5,11 +5,31 @@
 #include "Calibration/CardinalSpline.h"
 
 CalibrationManager::CalibrationManager(size_t maxRecords)
-    : _eepromManager(maxRecords) {}
+    : _eepromManager(maxRecords),
+      _mode(CalibrationMode::TemperatureCompensated),
+      _fixedCalibrationFactor(DEFAULT_CALIBRATION_FACTOR) {}
 
 void CalibrationManager::begin() {
   _eepromManager.begin();
+  _mode = _eepromManager.getCalibrationMode();
+  _fixedCalibrationFactor = _eepromManager.getFixedCalibrationFactor();
   _eepromManager.loadCalibrationRecords(_calibrationHistory);
+}
+
+void CalibrationManager::setCalibrationMode(CalibrationMode mode) {
+  _mode = mode;
+  _eepromManager.setCalibrationMode(mode);
+}
+
+CalibrationMode CalibrationManager::getCalibrationMode() const { return _mode; }
+
+void CalibrationManager::setFixedCalibrationFactor(float factor) {
+  _fixedCalibrationFactor = factor;
+  _eepromManager.setFixedCalibrationFactor(factor);
+}
+
+float CalibrationManager::getFixedCalibrationFactor() const {
+  return _fixedCalibrationFactor;
 }
 
 void CalibrationManager::addCalibrationRecord(float oilTemperature,
@@ -17,19 +37,15 @@ void CalibrationManager::addCalibrationRecord(float oilTemperature,
                                               float targetOilVolume,
                                               float observedOilVolume,
                                               unsigned long timestamp) {
-  CalibrationRecord newRecord;
-  newRecord.oilTemperature = oilTemperature;
-  newRecord.pulseCount = pulseCount;
-  newRecord.targetOilVolume = targetOilVolume;
-  newRecord.observedOilVolume = observedOilVolume;
-  newRecord.timestamp = timestamp;
+  CalibrationRecord newRecord = {oilTemperature, pulseCount, targetOilVolume,
+                                 observedOilVolume, timestamp};
 
   _calibrationHistory.push_back(newRecord);
   precomputeInterpolationCoefficients();
   updateCalibrationHistory();
 }
 
-void CalibrationManager::updateCalibrationRecord(
+bool CalibrationManager::updateCalibrationRecord(
     size_t id, float oilTemperature, unsigned long pulseCount,
     float targetOilVolume, float observedOilVolume, unsigned long timestamp) {
   if (id < _calibrationHistory.size()) {
@@ -42,7 +58,18 @@ void CalibrationManager::updateCalibrationRecord(
 
     precomputeInterpolationCoefficients();
     updateCalibrationHistory();
+    return true;
   }
+  return false;
+}
+
+bool CalibrationManager::deleteCalibrationRecord(size_t id) {
+  if (id < _calibrationHistory.size()) {
+    _calibrationHistory.erase(_calibrationHistory.begin() + id);
+    updateCalibrationHistory();
+    return true;
+  }
+  return false;
 }
 
 void CalibrationManager::updateCalibrationHistory() {
@@ -72,18 +99,6 @@ JsonDocument CalibrationManager::getCalibrationRecordsJson() const {
   return doc;
 }
 
-void CalibrationManager::deleteCalibrationRecord(size_t id) {
-  if (id < _calibrationHistory.size()) {
-    _calibrationHistory.erase(_calibrationHistory.begin() + id);
-    updateCalibrationHistory();  // Reflect changes in EEPROM
-  }
-}
-
-void CalibrationManager::clearCalibrationRecords() {
-  _calibrationHistory.clear();
-  _eepromManager.clearEEPROM();  // Also clear EEPROM records
-}
-
 JsonDocument CalibrationManager::getCalibrationRecordJson(size_t id) const {
   JsonDocument doc;
 
@@ -103,22 +118,17 @@ JsonDocument CalibrationManager::getCalibrationRecordJson(size_t id) const {
   return doc;
 }
 
-bool CalibrationManager::findRecordById(size_t id,
-                                        CalibrationRecord& outRecord) const {
-  if (id < _calibrationHistory.size()) {
-    outRecord = _calibrationHistory[id];
-    return true;
-  }
-  return false;
-}
-
 float CalibrationManager::getCalibrationFactor(float oilTemperature) const {
-  if (_calibrationHistory.empty()) {
-    return DEFAULT_CALIBRATION_FACTOR;
-  } else if (_calibrationHistory.size() == 1) {
-    return calculateLinearCalibrationFactor(oilTemperature);
+  if (_mode == CalibrationMode::Fixed) {
+    return _fixedCalibrationFactor;
   } else {
-    return calculateCardinalInterpolationCalibrationFactor(oilTemperature);
+    if (_calibrationHistory.empty()) {
+      return DEFAULT_CALIBRATION_FACTOR;
+    } else if (_calibrationHistory.size() == 1) {
+      return calculateLinearCalibrationFactor(oilTemperature);
+    } else {
+      return calculateCardinalInterpolationCalibrationFactor(oilTemperature);
+    }
   }
 }
 
