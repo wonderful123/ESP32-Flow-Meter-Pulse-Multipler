@@ -69,7 +69,8 @@ bool EEPROMManager::saveCalibrationRecords(
     const std::vector<CalibrationRecord>& records) {
   // Save calibration mode and fixed factor
   EEPROMHeader header = {EEPROM_EMPTY_MARKER, static_cast<uint8_t>(_mode),
-                         _fixedCalibrationFactor, records.size()};
+                         static_cast<uint8_t>(_fixedCalibrationFactor),
+                         static_cast<uint8_t>(records.size())};
   EEPROM.put(0, header);
 
   if (records.size() > _maxRecords) return false;
@@ -140,8 +141,8 @@ void EEPROMManager::clearEEPROM() {
     EEPROM.commit();
   }
 
-  EEPROMHeader header = {EEPROM_EMPTY_MARKER,
-                         0};  // Reset marker and record count
+  EEPROMHeader header = {EEPROM_EMPTY_MARKER, 0, 0,
+                         0};  // Set all fields explicitly.
   EEPROM.put(EEPROM_START_ADDRESS,
              header);  // It's assumed this is necessary even if the EEPROM was
                        // already clear, to ensure the header is correctly set.
