@@ -12,17 +12,20 @@ void DataReporter::begin() {
   // Initialize if needed
 }
 
-String DataReporter::getReportData() {
-  unsigned long pulseCount = _inputPulseMonitor->getPulseCount();
+JsonDocument DataReporter::getReportData() {
+  unsigned long inputPulseCount = _inputPulseMonitor->getPulseCount();
+  unsigned long outputPulseCount =
+      _outputPulseGenerator->getTotalOutputPulseCount();
   float inputFrequency = _inputPulseMonitor->getPulseFrequency();
-  float temperature = _temperatureSensor->getCurrentTemperature();
   float outputFrequency = _outputPulseGenerator->getOutputFrequency();
+  float temperature = _temperatureSensor->getCurrentTemperature();
 
-  String data = "{";
-  data += "\"pulseCount\":" + String(pulseCount) + ",";
-  data += "\"inputFrequency\":" + String(inputFrequency, 2) + ",";
-  data += "\"outputFrequency\":" + String(outputFrequency, 2) + ",";
-  data += "\"temperature\":" + String(temperature, 2);
-  data += "}";
-  return data;
+  JsonDocument doc;
+  doc["inputPulseCount"] = inputPulseCount;
+  doc["outputPulseCount"] = outputPulseCount;
+  doc["inputFrequency"] = inputFrequency;
+  doc["outputFrequency"] = outputFrequency;
+  doc["temperature"] = temperature;
+
+  return doc;
 }
