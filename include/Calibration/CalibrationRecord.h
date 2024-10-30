@@ -8,3 +8,5 @@ struct CalibrationRecord {
   float observedOilVolume;
   unsigned long timestamp;
 };
+
+enum class CalibrationMode { Fixed, TemperatureCompensated };
