@@ -1,6 +1,7 @@
 // WebServerManager.h
 #pragma once
 
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 
 #include "Calibration/CalibrationManager.h"
@@ -18,6 +19,7 @@ class WebServerManager {
   void begin();
   void update();
   void broadcastWebsocketMessage(String& type, String& message);
+  void broadcastWebsocketJson(String& type, JsonDocument json);
 
  private:
   CalibrationManager& _calibrationManager;

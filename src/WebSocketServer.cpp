@@ -65,7 +65,7 @@ const char* WebSocketServer::eventTypeToString(AwsEventType type) {
 }
 
 void WebSocketServer::broadcastJsonData(const String& type,
-                                        const JsonVariant& data) {
+                                        const JsonDocument data) {
   JsonDocument doc;
   doc["type"] = type;
   doc["data"] = data;
