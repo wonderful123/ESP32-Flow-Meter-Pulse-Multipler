@@ -19,8 +19,16 @@ const PATHS = {
 const PRODUCTION_OUTPUT_PATH = path.resolve(__dirname, "../data/www");
 const DEVELOPMENT_OUTPUT_PATH = path.resolve(__dirname, "dist");
 const ENABLE_BUNDLE_ANALYZER = false; // Set to `true` to enable bundle analysis
+
 const DEVELOPMENT_SERVER_PORT = 8080;
+const DEVELOPMENT_API_URL = "http://localhost:3000";
 const DEVELOPMENT_WEBSOCKET_PORT = 8085;
+const DEVELOPMENT_WEBSOCKET_URL = "ws://localhost";
+
+const PRODUCTION_API_URL = "http://localhost";
+const PRODUCTION_WEBSOCKET_PORT = 80;
+const PRODUCTION_WEBSOCKET_URL = "ws://pulse-scaler.local";
+
 // const TIMING_PROFILE_REPORT_FILENAME = path.resolve(__dirname, 'timingProfileReport.json'); // Used with the profiling plugin
 // const BUILD_STATS_FILENAME = 'buildStats.json'; //path.resolve(__dirname, 'buildStats.json'); // Used with the stats plugin
 
@@ -92,13 +100,10 @@ module.exports = env => {
         favicon: "public/favicon.ico",
       }),
       new webpack.DefinePlugin({
-        "process.env.WEBSOCKET_PORT": JSON.stringify(isProduction ? 80 : DEVELOPMENT_WEBSOCKET_PORT),
-        "process.env.API_BASE_URL": JSON.stringify(
-          isProduction ? "http://localhost" : "http://localhost:3000"
-        ),
-        "process.env.WEBSOCKET_URL": JSON.stringify(
-          isProduction ? "ws://localhost" : `ws://localhost:${DEVELOPMENT_WEBSOCKET_PORT}`
-        ),
+        // These variables are replaced in the frontend code as a direct text replacement
+        API_BASE_URL: JSON.stringify(isProduction ? PRODUCTION_API_URL : DEVELOPMENT_API_URL),
+        WEBSOCKET_PORT: isProduction ? PRODUCTION_WEBSOCKET_PORT : DEVELOPMENT_WEBSOCKET_PORT,
+        WEBSOCKET_URL: JSON.stringify(isProduction ? PRODUCTION_WEBSOCKET_URL : DEVELOPMENT_WEBSOCKET_URL),
       }),
       ...(isProduction
         ? [
