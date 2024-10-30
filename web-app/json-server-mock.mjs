@@ -30,6 +30,9 @@ function jsonResponse(statusCode, message, data = null) {
 // Handle WebSocket connections
 wss.on("connection", ws => {
   console.log(`[MOCK-SERVER][WEBSOCKET] WebSocket client connected. Total clients: ${clients.size + 1}`);
+  console.log(
+    `[MOCK-SERVER][WEBSOCKET] Web App URL: ${WEB_APP_URL} API Port: ${API_SERVER_PORT} API Prefix: ${API_PREFIX} WebSocket Port: ${WEBSOCKET_SERVER_PORT}`
+  );
   clients.add(ws);
 
   ws.on("message", message => {
@@ -92,13 +95,19 @@ function stopPulseCountSimulation() {
 
 function sendPulseCount() {
   const message = {
-    type: "pulseCount",
-    data: pulseCount,
+    type: "pulseUpdate",
+    data: {
+      inputPulseCount: pulseCount,
+      outputPulseCount: pulseCount * 1.3,
+      inputFrequency: 1000,
+      outputFrequency: 1300,
+    },
   };
 
   clients.forEach(client => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(message));
+      console.log(`[MOCK-SERVER][WEBSOCKET] Pulse count updated: ${pulseCount}`);
     }
   });
 }
@@ -124,6 +133,56 @@ server.use((req, res, next) => {
 
 // Middleware to parse JSON bodies - This needs to come before your routes
 server.use(jsonServer.bodyParser);
+
+// Route to get the calibration mode
+server.get(`${API_PREFIX}/calibration/mode`, (req, res) => {
+  // Retrieve the calibration settings from the database
+  const calibrationMode = router.db.get("calibrationSettings").value();
+
+  // Respond with the mode
+  res.status(200).jsonp(jsonResponse(200, "Fetched calibration mode.", calibrationMode));
+
+  // Log the fetched mode
+  console.log(`[MOCK-SERVER][API] Fetched calibration mode: ${calibrationMode}`);
+});
+
+// Route to set the calibration mode
+server.put(`${API_PREFIX}/calibration/mode`, (req, res) => {
+  const { mode } = req.body;
+
+  if (mode === "fixed" || mode === "temperature") {
+    router.db.get("calibrationSettings").assign({ mode }).write();
+    console.log(`[MOCK-SERVER][API] Calibration mode set to: ${mode}`);
+    res.status(200).jsonp(jsonResponse(200, "Calibration mode updated successfully.", { mode }));
+  } else {
+    res.status(400).jsonp(jsonResponse(400, "[MOCK-SERVER] Invalid calibration mode"));
+    console.log("[MOCK-SERVER][API] Invalid calibration mode");
+  }
+});
+
+// Route to get the fixed calibration factor
+server.get(`${API_PREFIX}/calibration/fixed-factor`, (req, res) => {
+  const calibrationSettings = router.db.get("calibrationSettings").value();
+  const fixedCalibrationFactor = calibrationSettings.fixedCalibrationFactor;
+  res.status(200).jsonp(jsonResponse(200, "Fetched fixed calibration factor.", { "fixedCalibrationFactor": fixedCalibrationFactor }));
+  console.log(`[MOCK-SERVER][API] Fetched fixed calibration factor: ${fixedCalibrationFactor}`);
+});
+
+// Route to set the fixed calibration factor
+server.put(`${API_PREFIX}/calibration/fixed-factor`, (req, res) => {
+  const { factor } = req.body;
+
+  if (typeof factor === "number" && factor > 0) {
+    router.db.get("calibrationSettings").assign({ fixedCalibrationFactor: factor }).write();
+    console.log(`[MOCK-SERVER][API] Fixed calibration factor set to: ${factor}`);
+    res
+      .status(200)
+      .jsonp(jsonResponse(200, "Fixed calibration factor updated successfully.", { fixedCalibrationFactor: factor }));
+  } else {
+    res.status(400).jsonp(jsonResponse(400, "[MOCK-SERVER] Invalid calibration factor"));
+    console.log("[MOCK-SERVER][API] Invalid calibration factor");
+  }
+});
 
 // GET /api/calibration-records
 server.get(`${API_PREFIX}/calibration-records`, (req, res) => {
@@ -153,13 +212,13 @@ server.get(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
 
 // POST /api/calibration-records
 server.post(`${API_PREFIX}/calibration-records`, (req, res) => {
-  const { targetVolume, observedVolume, pulseCount } = req.body;
+  const { targetOilVolume, observedOilVolume, pulseCount } = req.body;
 
-  if (targetVolume !== undefined && observedVolume !== undefined && pulseCount !== undefined) {
+  if (targetOilVolume !== undefined && observedOilVolume !== undefined && pulseCount !== undefined) {
     const newRecord = {
       id: Date.now(),
-      targetVolume,
-      observedVolume,
+      targetOilVolume,
+      observedOilVolume,
       pulseCount,
       createdAt: new Date().toISOString(),
     };
@@ -168,7 +227,11 @@ server.post(`${API_PREFIX}/calibration-records`, (req, res) => {
     res.status(201).jsonp(jsonResponse(201, "Calibration record added successfully.", newRecord));
     console.log("[MOCK-SERVER][API] New calibration record created");
   } else {
-    res.status(400).jsonp(jsonResponse(400, "[MOCK-SERVER] Missing required fields"));
+    let missingFields = [];
+    if (targetOilVolume === undefined) missingFields.push("targetOilVolume");
+    if (observedOilVolume === undefined) missingFields.push("observedOilVolume");
+    if (pulseCount === undefined) missingFields.push("pulseCount");
+    res.status(400).jsonp(jsonResponse(400, `[MOCK-SERVER] Missing required fields: ${missingFields.join(", ")}`));
     console.log("[MOCK-SERVER][API] Missing required fields for creating a new calibration record");
   }
 });
@@ -213,18 +276,14 @@ server.delete(`${API_PREFIX}/calibration-records/:id`, (req, res) => {
 server.get(`${API_PREFIX}/calibration/start`, (req, res) => {
   startPulseCountSimulation();
   console.log("[MOCK-SERVER][API] Calibration started.");
-  res.status(200).jsonp(
-    jsonResponse(200, "[MOCK-SERVER] Calibration started.")
-  );
+  res.status(200).jsonp(jsonResponse(200, "[MOCK-SERVER] Calibration started."));
 });
 
 // Route to stop pulse count simulation
 server.get(`${API_PREFIX}/calibration/stop`, (req, res) => {
   stopPulseCountSimulation();
   console.log("[MOCK-SERVER][API] Calibration stopped.");
-  res.status(200).jsonp(
-    jsonResponse(200, "[MOCK-SERVER] Calibration stopped.", { pulseCount })
-  );
+  res.status(200).jsonp(jsonResponse(200, "[MOCK-SERVER] Calibration stopped.", { pulseCount }));
 });
 
 // Route to reset pulse count
@@ -232,9 +291,7 @@ server.get(`${API_PREFIX}/calibration/reset`, (req, res) => {
   pulseCount = 0;
   sendPulseCount();
   console.log("[MOCK-SERVER][API] Calibration pulse counter reset.");
-  res.status(200).jsonp(
-    jsonResponse(200, "[MOCK-SERVER] Calibration pulse counter reset.", { pulseCount })
-  );
+  res.status(200).jsonp(jsonResponse(200, "[MOCK-SERVER] Calibration pulse counter reset.", { pulseCount }));
 });
 
 // Route to check firmware version
@@ -252,10 +309,8 @@ server.get(`${API_PREFIX}/firmware-version`, (req, res) => {
 
   const currentVersion = router.db.get("firmware").value().currentVersion;
   console.log("[MOCK-SERVER][API] Firmware update check initiated");
-  
-  res.status(200).jsonp(
-    jsonResponse(200, "[MOCK-SERVER] Firmware update check initiated.", { currentVersion })
-  );
+
+  res.status(200).jsonp(jsonResponse(200, "[MOCK-SERVER] Firmware update check initiated.", { currentVersion }));
 });
 
 // Route to simulate firmware OTA update
@@ -282,10 +337,8 @@ server.post(`${API_PREFIX}/firmware-update`, (req, res) => {
   });
 
   console.log("[MOCK-SERVER][API] Attempting to perform OTA update");
-  
-  res.status(200).jsonp(
-    jsonResponse(200, "[MOCK-SERVER] Attempting to perform OTA update.")
-  );
+
+  res.status(200).jsonp(jsonResponse(200, "[MOCK-SERVER] Attempting to perform OTA update."));
 });
 
 server.use(router); // Use the router
