@@ -6,14 +6,14 @@
 #include "Settings.h"
 
 ApplicationManager::ApplicationManager()
-    : server(80),
-      calibrationManager(),
+    : calibrationManager(),
       inputPulseMonitor(PULSE_INPUT_PIN),
       outputPulseGenerator(SCALED_OUTPUT_PIN, &calibrationManager,
-                           &inputPulseMonitor),
+                           &inputPulseMonitor, &temperatureSensor),
       temperatureSensor(TEMP_SENSOR_PIN),
       dataReporter(&inputPulseMonitor, &outputPulseGenerator,
                    &temperatureSensor),
+      server(80),
       webServerManager(server, calibrationManager, inputPulseMonitor),
       captivePortal(server) {}
 
@@ -55,10 +55,10 @@ void ApplicationManager::broadcastPulseCountAtInterval(
   unsigned long currentTime = millis();
   if (currentTime - lastBroadcastTime >= interval) {
     lastBroadcastTime = currentTime;
-    String type = "pulseCount";
-    String message = dataReporter.getReportData();
+    String type = "pulseUpdate";
+    JsonDocument doc = dataReporter.getReportData();
     // LOG_DEBUG("Broadcasting pulse count: " +
     //           String(pulseCounter.getPulseCount()));
-    webServerManager.broadcastWebsocketMessage(type, message);
+    webServerManager.broadcastWebsocketJson(type, doc);
   }
 }
