@@ -8,7 +8,7 @@ const ErrorHandler = {
     console.error("Error:", error);
 
     // Display an error toast notification
-    ToastService.error("An error occurred. Please try again later.");
+    ToastService.error("An error occurred: " + error);
   },
 
   handleSuccess: message => {
