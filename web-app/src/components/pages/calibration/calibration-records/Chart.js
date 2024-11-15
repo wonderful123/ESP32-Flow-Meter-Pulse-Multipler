@@ -28,21 +28,18 @@ function buildChartData(records) {
   if (records.length === 0) {
     return {
       series: [],
+      message: "No calibration data available to display.",
     };
   }
 
-  const chartData = {
+  return {
     series: [
-      records.map(record => {
-        return {
-          x: record.oilTemperature,
-          y: getCalibrationFactor(record.targetOilVolume, record.observedOilVolume),
-        };
-      }),
+      records.map(record => ({
+        x: record.oilTemperature,
+        y: getCalibrationFactor(record.targetOilVolume, record.observedOilVolume),
+      })),
     ],
   };
-
-  return chartData;
 }
 
 const Chart = {
@@ -54,7 +51,11 @@ const Chart = {
   oncreate: function (vnode) {
     CalibrationRecordsService.getCalibrationRecords()
       .then(response => {
-        vnode.state.chartData = buildChartData(response.data);
+        if (response.message === "No calibration records available") {
+          vnode.state.chartData = { series: [], message: response.message };
+        } else {
+          vnode.state.chartData = buildChartData(response.data);
+        }
         m.redraw();
       })
       .catch(error => {
@@ -64,7 +65,7 @@ const Chart = {
       });
   },
 
-  view: function (vnode) {
+  view(vnode) {
     if (vnode.state.error) {
       return m("div.error", vnode.state.error);
     }
@@ -72,27 +73,13 @@ const Chart = {
     if (vnode.state.chartData === null) {
       return m(ChartComponent, {
         type: "line",
-        data: {
-          series: [],
-        },
-        options: {
-          ...options,
-          showLine: false,
-          showPoint: false,
-          showArea: false,
-          axisX: {
-            showGrid: false,
-            showLabel: false,
-          },
-          axisY: {
-            showGrid: false,
-            showLabel: false,
-          },
-        },
-        xAxisTitle: "",
-        yAxisTitle: "",
-        placeholderText: "Loading chart data...",
+        data: { series: [] },
+        options: { ...options, placeholderText: "Loading chart data..." },
       });
+    }
+
+    if (vnode.state.chartData.series.length === 0) {
+      return m("div.no-data", vnode.state.chartData.message || "No data available.");
     }
 
     return m(ChartComponent, {
@@ -101,12 +88,9 @@ const Chart = {
       options: options,
       xAxisTitle: X_AXIS_TITLE,
       yAxisTitle: Y_AXIS_TITLE,
-      lineSmooth: Interpolation.cardinal({
-        tension: 0.5,
-        fillHoles: false,
-      }),
+      lineSmooth: Interpolation.cardinal({ tension: 0.5, fillHoles: false }),
     });
-  },
+  }
 };
 
 export default Chart;

@@ -7,6 +7,11 @@ const CalibrationRecordsService = {
   getCalibrationRecords: async () => {
     try {
       const response = await APIService.get("/calibration-records");
+
+      if (response.message === "No calibration records available") {
+        return { data: [], message: response.message };
+      }
+
       return response;
     } catch (error) {
       throw error;

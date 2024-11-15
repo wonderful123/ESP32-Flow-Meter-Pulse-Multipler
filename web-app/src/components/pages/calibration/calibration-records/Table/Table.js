@@ -24,11 +24,15 @@ class Table {
 
   async fetchRecords() {
     try {
-      const request = await CalibrationRecordsService.getCalibrationRecords();
-      this.records = request.data;
+      const response = await CalibrationRecordsService.getCalibrationRecords();
+      if (response.message === "No calibration records available") {
+        this.records = [];
+      } else {
+        this.records = response.data;
+      }
       this.sortRecords();
     } catch (error) {
-      ErrorHandler.handleError(error);
+      ErrorHandler.handleError(error); // Only shows errors other than "no records"
     }
   }
 
@@ -122,9 +126,9 @@ class Table {
           sortOrder,
           onSort: this.handleSort.bind(this),
         }),
-        m(
-          "tbody",
-          records.map(record =>
+        records.length === 0
+          ? m("tbody", m("tr", m("td", { colspan: TableConfig.columns.length, class: "has-text-centered" }, "No calibration records available.")))
+          : m("tbody", records.map(record =>
             m(TableRow, {
               record,
               isEditing: editingRecordId === record.id,
@@ -133,8 +137,7 @@ class Table {
               onSaveEdits: this.saveEdits.bind(this),
               onDelete: () => this.openDeleteConfirmation(record),
             })
-          )
-        ),
+          )),
       ]),
       m(ConfirmationModal, {
         isOpen: isDeleteModalOpen,

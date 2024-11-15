@@ -29,6 +29,7 @@ const CalibrationPage = {
   },
 
   view() {
+    const hasRecords = this.selectedMode === "temperature" && this.records && this.records.length > 0;
     return m(SectionContainer, [
       m(TitleAndSubtitle, {
         title: "Pulse Scaling Calibration",
@@ -39,10 +40,18 @@ const CalibrationPage = {
         onModeChange: this.handleModeChange.bind(this),
       }),
       this.selectedMode === "fixed" ? m(FixedCalibrationDisplay) : null,
-      this.selectedMode === "temperature" ? [m("hr"),m(Chart), m("hr"), m(Table)] : null,
+      this.selectedMode === "temperature"
+        ? [
+          m("hr"),
+          m(Chart),
+          m("hr"),
+          m(Table),
+          !hasRecords && m("div.notification is-info", "No calibration records saved.")
+        ]
+        : null,
       m(CalibrationForm, { selectedMode: this.selectedMode }),
     ]);
-  },
+  }
 };
 
 export default CalibrationPage;
