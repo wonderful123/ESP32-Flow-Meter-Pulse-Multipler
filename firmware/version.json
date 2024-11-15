@@ -1,6 +1,6 @@
 {
   "type": "esp32-fota-http",
-  "url": "https://github.com/wonderful123/ESP32-Flow-Meter-Pulse-Multipler/firmware/firmware.gzip",
+  "url": "https://github.com/wonderful123/ESP32-Flow-Meter-Pulse-Multipler/firmware/firmware.bin.gz",
   "version": "1.0.1",
   "changes": "Changelog: new features, etc"
 }
