@@ -1,8 +1,8 @@
+@use "sass:color";
 ////////////////////////////////////////////////
 // CYBORG
 ////////////////////////////////////////////////
 $black-ter: #222;
-
 $grey-accent: hsl(0, 0%, 14%);
 $grey-darker: hsl(0, 0%, 21%);
 $grey-dark: hsl(0, 0%, 29%);
@@ -11,7 +11,7 @@ $grey-light: hsl(0, 0%, 71%);
 $grey-lighter: hsl(0, 0%, 86%);
 
 $primary: #2a9fd6 !default;
-$primary-light: lighten($primary, 10);
+$primary-light: color.adjust($primary, $lightness: 10%);
 $link: #3273e2;
 
 $white: #fff;
@@ -28,8 +28,8 @@ $subtitle-color: $white-ter;
 $subtitle-strong-color: $white-ter;
 
 $text: $white;
-$text-light: lighten($text, 10);
-$text-strong: darken($text, 5);
+$text-light: color.adjust($text, $lightness: 10%);
+$text-strong: color.adjust($text, $lightness: -5%);
 
 $box-color: $text;
 $box-background-color: $grey-accent;
@@ -59,7 +59,7 @@ $table-cell-border: 1px solid $grey-dark;
 
 $table-row-hover-background-color: $grey-dark;
 $table-striped-row-even-background-color: $grey-dark;
-$table-striped-row-even-hover-background-color: lighten($grey-dark, 4);
+$table-striped-row-even-hover-background-color: color.adjust($grey-dark, $lightness: 4%);
 
 $pagination-border-color: $grey-darker;
 $pagination-disabled: $grey-light;
