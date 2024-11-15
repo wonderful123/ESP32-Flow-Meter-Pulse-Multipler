@@ -12,8 +12,12 @@
 
 #define WEBSOCKET_PORT 80
 
-#define OTA_FIRMWARE_URL "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/firmware.bin"
-#define OTA_FIRMWARE_MANIFEST_URL "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/version.json"
+#define OTA_FIRMWARE_URL                                                       \
+  "https://github.com/wonderful123/ESP32-Flow-Meter-Pulse-Multipler/firmware/" \
+  "firmware.bin"
+#define OTA_FIRMWARE_MANIFEST_URL                                              \
+  "https://github.com/wonderful123/ESP32-Flow-Meter-Pulse-Multipler/firmware/" \
+  "version.json"
 #define MDNS_DOMAIN_NAME "pulse-scaler"
 #define AP_SSID_NAME "Pulse Scaler"
 

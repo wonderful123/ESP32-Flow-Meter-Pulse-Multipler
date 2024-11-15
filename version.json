@@ -1,6 +1,0 @@
-{
-  "type": "esp32-fota-http",
-  "url": "http://smoothcontrol.com/embedded-firmware/flowmeter-pulse-scaler/firmware.gzip",
-  "version": "1.0.1",
-  "changes": "Changelog: new features, etc"
-}
