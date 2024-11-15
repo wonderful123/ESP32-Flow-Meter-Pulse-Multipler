@@ -77,17 +77,17 @@ void CalibrationManager::updateCalibrationHistory() {
 }
 
 JsonDocument CalibrationManager::getCalibrationRecordsJson() const {
-  // Create a JSON document with sufficient capacity
   JsonDocument doc;
-
-  // Create a JSON array to hold the records
   JsonArray array = doc.to<JsonArray>();
 
-  // Iterate over the calibration history
+  if (_calibrationHistory.empty()) {
+    doc["message"] = "No calibration records available.";
+    return doc;
+  }
+
   for (const auto& record : _calibrationHistory) {
-    // Create a JSON object for each record
     JsonObject obj = array.add<JsonObject>();
-    obj["id"] = &record - &_calibrationHistory[0];  // Calculate index
+    obj["id"] = &record - &_calibrationHistory[0];
     obj["oilTemperature"] = record.oilTemperature;
     obj["pulseCount"] = record.pulseCount;
     obj["targetOilVolume"] = record.targetOilVolume;
@@ -95,7 +95,6 @@ JsonDocument CalibrationManager::getCalibrationRecordsJson() const {
     obj["timestamp"] = record.timestamp;
   }
 
-  // Return the JSON document directly
   return doc;
 }
 
@@ -103,11 +102,11 @@ JsonDocument CalibrationManager::getCalibrationRecordJson(size_t id) const {
   JsonDocument doc;
 
   if (id >= _calibrationHistory.size()) {
-    return doc;  // Return empty JSON object if id is out of range
+    doc["message"] = "Calibration record not found.";
+    return doc;
   }
 
   const auto& record = _calibrationHistory[id];
-
   doc["id"] = id;
   doc["oilTemperature"] = record.oilTemperature;
   doc["pulseCount"] = record.pulseCount;
