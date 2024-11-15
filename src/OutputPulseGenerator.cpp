@@ -24,7 +24,13 @@ void OutputPulseGenerator::begin() {
 
 void OutputPulseGenerator::update() {
   unsigned long inputPulseCount = _inputPulseMonitor->getPulseCount();
-  unsigned long pulseDifference = inputPulseCount - _lastInputPulseCount;
+  
+  // The esp32 has a maximum of 4,294,967,295 for the counter. It is very large
+  // but wrap-around logic is handled.
+  unsigned long pulseDifference =
+      (inputPulseCount >= _lastInputPulseCount)
+          ? (inputPulseCount - _lastInputPulseCount)
+          : (UINT32_MAX - _lastInputPulseCount + inputPulseCount + 1);
 
   if (pulseDifference > 0) {
     float scalingFactor;

@@ -40,7 +40,12 @@ float InputPulseMonitor::getPulseFrequency() {
   unsigned long currentPulseCount = _pulseCount;
   interrupts();
 
-  unsigned long pulseDiff = currentPulseCount - _lastPulseCount;
+  // The esp32 has a maximum of 4,294,967,295 for the counter. It is very large
+  // but wrap-around logic is handled.
+  unsigned long pulseDiff =
+      (currentPulseCount >= _lastPulseCount)
+          ? (currentPulseCount - _lastPulseCount)
+          : (UINT32_MAX - _lastPulseCount + currentPulseCount + 1);
 
   float frequency = (pulseDiff * 1000.0f) / timeElapsed;  // pulses per second
 
