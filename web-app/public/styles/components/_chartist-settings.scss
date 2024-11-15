@@ -1,3 +1,5 @@
+@use '~chartist/dist/index.scss';
+
 $ct-grid-color: rgba(white, 0.2);
 $ct-text-color: rgba(white, 0.4);
 
@@ -8,8 +10,6 @@ $ct-text-color: rgba(white, 0.4);
 .ct-axis-title {
   stroke: rgba(255, 255, 255, 0.4);
 }
-
-@import '~chartist/dist/index.scss';
 
 .ct-axis-title {
   font-family: Arial, sans-serif;
